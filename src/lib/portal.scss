@@ -1,7 +1,26 @@
-hub-modal-window {
+hub-portal-window {
 	.component-host-scrollable {
 		display: flex;
 		flex-direction: column;
 		overflow: hidden;
 	}
+}
+
+.portal-backdrop.fade {
+	opacity: 0;
+}
+.portal-backdrop.show {
+	opacity: var(--bs-backdrop-opacity) !important;
+}
+.portal-backdrop {
+	--bs-backdrop-zindex: 1050;
+	--bs-backdrop-bg: #000;
+	--bs-backdrop-opacity: 0.5;
+	position: fixed;
+	top: 0;
+	left: 0;
+	z-index: var(--bs-backdrop-zindex);
+	width: 100vw;
+	height: 100vh;
+	background-color: var(--bs-backdrop-bg);
 }

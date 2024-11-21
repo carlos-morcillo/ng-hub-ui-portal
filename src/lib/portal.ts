@@ -35,6 +35,27 @@ export class HubPortal {
 	}
 
 	/**
+	 * The function `toggle` opens a portal with specified content and options while dismissing any existing portals.
+	 *
+	 * @param {any} content - The `content` parameter in the `toggle` function is the content that you want to display within the
+	 * portal. This can be any type of content such as a component, template, or any other HTML element that you want to show in the
+	 * portal.
+	 * @param {HubPortalOptions} options - The `options` parameter in the `toggle` function is an object that allows you to customize
+	 * the behavior of the portal.
+	 *
+	 * @returns The `toggle` function is returning a `HubPortalRef` object.
+	 */
+	toggle(content: any, options: HubPortalOptions = {}): HubPortalRef {
+		const combinedOptions = {
+			...this._config,
+			animation: this._config.animation,
+			...options
+		};
+		this.dismissAll();
+		return this._portalStack.open(this._injector, content, combinedOptions);
+	}
+
+	/**
 	 * Returns an observable that holds the active portal instances.
 	 */
 	get activeInstances() {

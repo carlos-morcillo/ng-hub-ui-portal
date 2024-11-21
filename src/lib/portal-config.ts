@@ -186,7 +186,7 @@ export class HubPortalConfig implements Required<HubPortalOptions> {
 
 	ariaLabelledBy: string;
 	ariaDescribedBy: string;
-	backdrop: boolean | 'static' = true;
+	backdrop: boolean | 'static' = false;
 	beforeDismiss: () => boolean | Promise<boolean>;
 	centered: boolean;
 	container: string | HTMLElement;

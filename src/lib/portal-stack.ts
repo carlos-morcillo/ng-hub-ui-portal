@@ -438,9 +438,7 @@ export class HubPortalStack {
 			const dismissaable: NodeListOf<Element> =
 				container.querySelectorAll(options.closeSelector);
 			for (const item of Array.from(dismissaable)) {
-				const clickEventListeners = item.addEventListener('click', () =>
-					context.close()
-				);
+				item.addEventListener('click', () => context.close());
 			}
 		}
 	}
