@@ -21,7 +21,6 @@ import {
 } from 'ng-hub-ui-utils';
 import { Subject } from 'rxjs';
 import { take } from 'rxjs/operators';
-import { HubPortalBackdrop } from './portal-backdrop';
 import { HubPortalOptions, HubPortalUpdatableOptions } from './portal-config';
 import { HubActivePortal, HubPortalRef } from './portal-ref';
 import { HubPortalWindow } from './portal-window';
@@ -110,16 +109,12 @@ export class HubPortalStack {
 			options
 		);
 
-		const backdropCmptRef: ComponentRef<HubPortalBackdrop> | undefined =
-			options.backdrop !== false
-				? this._attachBackdrop(containerEl)
-				: undefined;
 		const windowCmptRef: ComponentRef<HubPortalWindow> =
-			this._attachWindowComponent(containerEl, contentRef.nodes, options);
+			this._createWindowComponent(contentRef.nodes, options);
+		this._attachWindowComponent(containerEl, windowCmptRef);
 		const hubPortalRef: HubPortalRef = new HubPortalRef(
 			windowCmptRef,
 			contentRef,
-			backdropCmptRef,
 			options.beforeDismiss
 		);
 
@@ -155,11 +150,119 @@ export class HubPortalStack {
 			this._document.body.classList.add('portal-open');
 		}
 
-		if (backdropCmptRef && backdropCmptRef.instance) {
-			backdropCmptRef.changeDetectorRef.detectChanges();
-		}
 		windowCmptRef.changeDetectorRef.detectChanges();
 		return hubPortalRef;
+	}
+
+	/**
+	 * Toggles a portal by dismissing all existing portals and waiting for them to be hidden
+	 * before showing the new one.
+	 *
+	 * @param contentInjector - The injector to use for dependency injection
+	 * @param content - The content to display (component, template, or string)
+	 * @param options - Portal configuration options
+	 * @returns A reference to the newly created portal
+	 */
+	toggle(
+		contentInjector: Injector,
+		content: any,
+		options: HubPortalOptions
+	): HubPortalRef {
+		// Get current portals before creating the new one
+		const existingPortals = [...this._portalRefs];
+
+		// Create the new portal but suppress normal registration
+		const containerEl =
+			options.container instanceof HTMLElement
+				? options.container
+				: isDefined(options.container)
+				? this._document.querySelector(options.container!)
+				: this._document.body;
+
+		if (!containerEl) {
+			throw new Error(
+				`The specified portal container "${
+					options.container || 'body'
+				}" was not found in the DOM.`
+			);
+		}
+
+		this._hideScrollBar();
+
+		const activePortal = new HubActivePortal();
+		contentInjector = options.injector || contentInjector;
+		const environmentInjector =
+			contentInjector.get(EnvironmentInjector, null) ||
+			this._environmentInjector;
+
+		const contentRef = this._getContentRef(
+			contentInjector,
+			environmentInjector,
+			content,
+			activePortal,
+			options
+		);
+
+		const windowCmptRef = this._createWindowComponent(
+			contentRef.nodes,
+			options
+		);
+
+		const newPortalRef = new HubPortalRef(
+			windowCmptRef,
+			contentRef,
+			options.beforeDismiss
+		);
+
+		// Setup active portal methods
+		activePortal.close = (result: any) => {
+			newPortalRef.close(result);
+		};
+		activePortal.dismiss = (reason: any) => {
+			newPortalRef.dismiss(reason);
+		};
+		activePortal.update = (options: HubPortalUpdatableOptions) => {
+			newPortalRef.update(options);
+		};
+
+		// Dismiss all existing portals and wait for them to be hidden
+		const hidePromises = existingPortals.map(
+			(portal) =>
+				new Promise<void>((resolve) => {
+					portal.hidden.pipe(take(1)).subscribe(() => {
+						resolve();
+					});
+					portal.dismiss('toggle');
+				})
+		);
+
+		// After all portals are hidden, register and show the new one
+		Promise.all(hidePromises).then(() => {
+			this._attachWindowComponent(containerEl, windowCmptRef);
+
+			this._registerPortalRef(newPortalRef);
+			this._registerWindowCmpt(windowCmptRef);
+
+			if (this._portalRefs.length === 1) {
+				this._document.body.classList.add('portal-open');
+			}
+
+			newPortalRef.update(options);
+			windowCmptRef.changeDetectorRef.detectChanges();
+		});
+
+		// Setup hidden cleanup like in open()
+		newPortalRef.hidden.pipe(take(1)).subscribe(() =>
+			Promise.resolve(true).then(() => {
+				if (!this._portalRefs.length) {
+					this._document.body.classList.remove('portal-open');
+					this._restoreScrollBar();
+					this._revertAriaHidden();
+				}
+			})
+		);
+
+		return newPortalRef;
 	}
 
 	get activeInstances() {
@@ -176,20 +279,7 @@ export class HubPortalStack {
 		return this._portalRefs.length > 0;
 	}
 
-	private _attachBackdrop(
-		containerEl: Element
-	): ComponentRef<HubPortalBackdrop> {
-		let backdropCmptRef = createComponent(HubPortalBackdrop, {
-			environmentInjector: this._applicationRef.injector,
-			elementInjector: this._injector
-		});
-		this._applicationRef.attachView(backdropCmptRef.hostView);
-		containerEl.appendChild(backdropCmptRef.location.nativeElement);
-		return backdropCmptRef;
-	}
-
-	private _attachWindowComponent(
-		containerEl: Element,
+	private _createWindowComponent(
 		[headerNodes, bodyNodes, footerNodes]: Node[][],
 		options: HubPortalOptions
 	): ComponentRef<HubPortalWindow> {
@@ -205,6 +295,13 @@ export class HubPortalStack {
 
 		Object.assign(windowCmptRef.instance, { singleContent });
 
+		return windowCmptRef;
+	}
+
+	private _attachWindowComponent(
+		containerEl: Element,
+		windowCmptRef: ComponentRef<HubPortalWindow>
+	): ComponentRef<HubPortalWindow> {
 		this._applicationRef.attachView(windowCmptRef.hostView);
 		containerEl.appendChild(windowCmptRef.location.nativeElement);
 		return windowCmptRef;

@@ -27,15 +27,6 @@ export interface HubPortalOptions {
 	ariaDescribedBy?: string;
 
 	/**
-	 * If `true`, the backdrop element will be created for a given portal.
-	 *
-	 * Alternatively, specify `'static'` for a backdrop which doesn't close the portal on click.
-	 *
-	 * Default value is `true`.
-	 */
-	backdrop?: boolean | 'static';
-
-	/**
 	 * Callback right before the portal will be dismissed.
 	 *
 	 * If this function returns:
@@ -114,11 +105,11 @@ export interface HubPortalOptions {
 	portalDialogClass?: string;
 
 	/**
-	 * A custom class to append to the portal backdrop.
+	 * A custom class to append to the portal content.
 	 *
-	 * @since 1.1.0
+	 * @since 9.1.0
 	 */
-	backdropClass?: string;
+	portalContentClass?: string;
 
 	/**
 	 * Allows to specify a custom selector for the header element of the portal window. This can be useful if you want to target
@@ -165,10 +156,10 @@ export type HubPortalUpdatableOptions = Pick<
 	| 'ariaDescribedBy'
 	| 'centered'
 	| 'fullscreen'
-	| 'backdropClass'
 	| 'size'
 	| 'windowClass'
 	| 'portalDialogClass'
+	| 'portalContentClass'
 >;
 
 /**
@@ -197,7 +188,7 @@ export class HubPortalConfig implements Required<HubPortalOptions> {
 	size: 'sm' | 'lg' | 'xl' | string;
 	windowClass: string;
 	portalDialogClass: string;
-	backdropClass: string;
+	portalContentClass: string;
 	headerSelector: string;
 	footerSelector: string;
 	dismissSelector: string = '[data-dismiss="portal"]';

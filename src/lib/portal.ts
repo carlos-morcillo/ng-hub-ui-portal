@@ -51,8 +51,13 @@ export class HubPortal {
 			animation: this._config.animation,
 			...options
 		};
-		this.dismissAll();
-		return this._portalStack.open(this._injector, content, combinedOptions);
+		// this.dismissAll();
+		// return this._portalStack.open(this._injector, content, combinedOptions);
+		return this._portalStack.toggle(
+			this._injector,
+			content,
+			combinedOptions
+		);
 	}
 
 	/**

@@ -49,7 +49,12 @@ import {
 			"
 			role="document"
 		>
-			<div class="portal-content">
+			<div
+				[class]="
+					'portal-content' +
+					(portalContentClass ? ' ' + portalContentClass : '')
+				"
+			>
 				<ng-container *ngIf="singleContent; else multipleContent">
 					<ng-content></ng-content>
 				</ng-container>

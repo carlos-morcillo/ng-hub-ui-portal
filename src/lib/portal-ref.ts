@@ -1,10 +1,9 @@
 import { ComponentRef } from '@angular/core';
-import { Observable, of, Subject, zip } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
-import { HubPortalBackdrop } from './portal-backdrop';
-import { HubPortalWindow } from './portal-window';
-import { HubPortalOptions, HubPortalUpdatableOptions } from './portal-config';
 import { ContentRef, isDefined, isPromise } from 'ng-hub-ui-utils';
+import { Observable, Subject, zip } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
+import { HubPortalOptions, HubPortalUpdatableOptions } from './portal-config';
+import { HubPortalWindow } from './portal-window';
 
 /**
  * A reference to the currently opened (active) portal.
@@ -70,17 +69,6 @@ export class HubPortalRef {
 		});
 	}
 
-	private _applyBackdropOptions(
-		backdropInstance: HubPortalBackdrop,
-		options: HubPortalOptions
-	): void {
-		BACKDROP_ATTRIBUTES.forEach((optionName: string) => {
-			if (isDefined(options[optionName])) {
-				backdropInstance[optionName] = options[optionName];
-			}
-		});
-	}
-
 	/**
 	 * Updates options of an opened portal.
 	 *
@@ -88,9 +76,6 @@ export class HubPortalRef {
 	 */
 	update(options: HubPortalUpdatableOptions): void {
 		this._applyWindowOptions(this._windowCmptRef.instance, options);
-		if (this._backdropCmptRef && this._backdropCmptRef.instance) {
-			this._applyBackdropOptions(this._backdropCmptRef.instance, options);
-		}
 	}
 
 	/**
@@ -160,7 +145,6 @@ export class HubPortalRef {
 	constructor(
 		private _windowCmptRef: ComponentRef<HubPortalWindow>,
 		private _contentRef: ContentRef,
-		private _backdropCmptRef?: ComponentRef<HubPortalBackdrop>,
 		private _beforeDismiss?: () => boolean | Promise<boolean>
 	) {
 		_windowCmptRef.instance.dismissEvent.subscribe((reason: any) => {
@@ -222,9 +206,6 @@ export class HubPortalRef {
 
 	private _removePortalElements() {
 		const windowTransition$ = this._windowCmptRef.instance.hide();
-		const backdropTransition$ = this._backdropCmptRef
-			? this._backdropCmptRef.instance.hide()
-			: of(undefined);
 
 		// hiding window
 		windowTransition$.subscribe(() => {
@@ -237,18 +218,8 @@ export class HubPortalRef {
 			this._contentRef = <any>null;
 		});
 
-		// hiding backdrop
-		backdropTransition$.subscribe(() => {
-			if (this._backdropCmptRef) {
-				const { nativeElement } = this._backdropCmptRef.location;
-				nativeElement.parentNode.removeChild(nativeElement);
-				this._backdropCmptRef.destroy();
-				this._backdropCmptRef = <any>null;
-			}
-		});
-
 		// all done
-		zip(windowTransition$, backdropTransition$).subscribe(() => {
+		zip(windowTransition$).subscribe(() => {
 			this._hidden.next();
 			this._hidden.complete();
 		});
