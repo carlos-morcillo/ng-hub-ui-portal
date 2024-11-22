@@ -76,5 +76,16 @@ describe('hub-portal-dialog', () => {
 			expect(dialogEl).toHaveClass('portal-dialog');
 			expect(dialogEl).toHaveClass('custom-dialog-class');
 		});
+
+		it('should render portal content with a specified class', () => {
+			fixture.componentInstance.portalContentClass =
+				'custom-content-class';
+			fixture.detectChanges();
+
+			const contentEl: Element =
+				fixture.nativeElement.querySelector('.portal-content');
+			expect(contentEl).toHaveClass('portal-content');
+			expect(contentEl).toHaveClass('custom-content-class');
+		});
 	});
 });

@@ -44,7 +44,8 @@ const WINDOW_ATTRIBUTES: string[] = [
 	'scrollable',
 	'size',
 	'windowClass',
-	'portalDialogClass'
+	'portalDialogClass',
+	'portalContentClass'
 ];
 const BACKDROP_ATTRIBUTES: string[] = ['animation', 'backdropClass'];
 
