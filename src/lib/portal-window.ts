@@ -104,6 +104,7 @@ export class HubPortalWindow implements OnInit, OnDestroy {
 	@Input() size: string;
 	@Input() windowClass: string;
 	@Input() portalDialogClass: string;
+	@Input() portalContentClass: string;
 
 	singleContent!: boolean;
 
