@@ -1,6 +1,6 @@
 {
 	"name": "ng-hub-ui-portal",
-	"version": "0.3.2",
+	"version": "0.3.3",
 	"description": "A flexible Angular portal library for dynamic content rendering with advanced positioning and interaction control",
 	"keywords": [
 		"angular",

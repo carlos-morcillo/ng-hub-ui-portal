@@ -100,6 +100,64 @@ export class YourComponent {
   }
 }
 ```
+
+Note: When opening a portal, consider specifying a container where it will be rendered. While it defaults to `body`, it's recommended to explicitly define your container for better control and organization.
+
+## Container Management
+
+The portal's `container` option determines where in the DOM the portal will be rendered. While it defaults to the document body, specifying a custom container gives you better control over portal placement and management.
+
+### Specifying a Container
+
+You can specify a container using either a CSS selector or a direct HTMLElement reference:
+
+```typescript
+// Using a CSS selector
+const portalRef = this.portal.open(YourComponent, {
+  container: '#myContainer'
+});
+
+// Or using toggle
+const portalRef = this.portal.toggle(YourComponent, {
+  container: '#portalHost'
+});
+
+// Using an HTMLElement reference
+const containerElement = document.querySelector('.portal-container');
+const portalRef = this.portal.open(YourComponent, {
+  container: containerElement
+});
+```
+
+### Best Practices
+
+1. **Explicit Container Definition**: Although the body is available as a default, it's recommended to explicitly specify your container:
+```typescript
+// Recommended
+const portalRef = this.portal.toggle(YourComponent, {
+  container: '#specificContainer'
+});
+
+// Less ideal - relies on default body container
+const portalRef = this.portal.toggle(YourComponent);
+```
+
+2. **Container Preparation**: Ensure your container exists in the DOM before opening the portal:
+```html
+<!-- In your template -->
+<div id="portalContainer" class="portal-host">
+  <!-- Portals will be rendered here -->
+</div>
+```
+
+3. **Container Styling**: Consider styling your container appropriately:
+```css
+.portal-host {
+  position: relative;
+  min-height: 100px;
+}
+```
+
 ## Portal Opening Strategies
 
 The library provides two distinct methods for opening portals, each with its own specific behavior:
