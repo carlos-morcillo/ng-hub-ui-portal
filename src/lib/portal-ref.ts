@@ -37,12 +37,7 @@ const WINDOW_ATTRIBUTES: string[] = [
 	'animation',
 	'ariaLabelledBy',
 	'ariaDescribedBy',
-	'backdrop',
-	'centered',
-	'fullscreen',
-	'keyboard',
 	'scrollable',
-	'size',
 	'windowClass',
 	'portalDialogClass',
 	'portalContentClass'
@@ -99,8 +94,6 @@ export class HubPortalRef {
 	 * The observable that emits when the portal is closed via the `.close()` method.
 	 *
 	 * It will emit the result passed to the `.close()` method.
-	 *
-	 * @since 8.0.0
 	 */
 	get closed(): Observable<any> {
 		return this._closed.asObservable().pipe(takeUntil(this._hidden));
@@ -109,22 +102,17 @@ export class HubPortalRef {
 	/**
 	 * The observable that emits when the portal is dismissed via the `.dismiss()` method.
 	 *
-	 * It will emit the reason passed to the `.dismissed()` method by the user, or one of the internal
-	 * reasons like backdrop click or ESC key press.
-	 *
-	 * @since 8.0.0
+	 * It will emit the reason passed to the `.dismissed()` method by the user.
 	 */
 	get dismissed(): Observable<any> {
 		return this._dismissed.asObservable().pipe(takeUntil(this._hidden));
 	}
 
 	/**
-	 * The observable that emits when both portal window and backdrop are closed and animations were finished.
-	 * At this point portal and backdrop elements will be removed from the DOM tree.
+	 * The observable that emits when portal window is closed and animations were finished.
+	 * At this point portal element will be removed from the DOM tree.
 	 *
 	 * This observable will be completed after emitting.
-	 *
-	 * @since 8.0.0
 	 */
 	get hidden(): Observable<void> {
 		return this._hidden.asObservable();
@@ -136,8 +124,6 @@ export class HubPortalRef {
 	 *
 	 * This observable will be completed after emitting.
 	 * It will not emit, if portal is closed before open animation is finished.
-	 *
-	 * @since 8.0.0
 	 */
 	get shown(): Observable<void> {
 		return this._windowCmptRef.instance.shown.asObservable();

@@ -21,36 +21,6 @@ describe('hub-portal-dialog', () => {
 			expect(dialogEl).toHaveClass('portal-dialog');
 		});
 
-		it('should render default portal window with a specified size', () => {
-			fixture.componentInstance.size = 'sm';
-			fixture.detectChanges();
-
-			const dialogEl: Element =
-				fixture.nativeElement.querySelector('.portal-dialog');
-			expect(dialogEl).toHaveClass('portal-dialog');
-			expect(dialogEl).toHaveClass('portal-sm');
-		});
-
-		it('should render default portal window with a specified fullscreen size', () => {
-			fixture.detectChanges();
-			const dialogEl = fixture.nativeElement.querySelector(
-				'.portal-dialog'
-			) as HTMLElement;
-			expect(dialogEl).not.toHaveClass('portal-fullscreen');
-
-			fixture.componentInstance.fullscreen = true;
-			fixture.detectChanges();
-			expect(dialogEl).toHaveClass('portal-fullscreen');
-
-			fixture.componentInstance.fullscreen = 'sm';
-			fixture.detectChanges();
-			expect(dialogEl).toHaveClass('portal-fullscreen-sm-down');
-
-			fixture.componentInstance.fullscreen = 'custom';
-			fixture.detectChanges();
-			expect(dialogEl).toHaveClass('portal-fullscreen-custom-down');
-		});
-
 		it('should render default portal window with a specified class', () => {
 			fixture.componentInstance.windowClass = 'custom-class';
 			fixture.detectChanges();

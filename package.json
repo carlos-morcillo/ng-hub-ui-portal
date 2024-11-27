@@ -1,6 +1,36 @@
 {
 	"name": "ng-hub-ui-portal",
-	"version": "0.2.2",
+	"version": "0.3.2",
+	"description": "A flexible Angular portal library for dynamic content rendering with advanced positioning and interaction control",
+	"keywords": [
+		"angular",
+		"portal",
+		"modal",
+		"dialog",
+		"popup",
+		"overlay",
+		"dynamic-content",
+		"component-rendering",
+		"ui-component",
+		"angular-portal",
+		"angular16",
+		"typescript",
+		"hub-ui",
+		"accessibility",
+		"a11y"
+	],
+	"author": {
+		"name": "Hub UI Team"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/carlos-morcillo/ng-hub-ui-portal"
+	},
+	"bugs": {
+		"url": "https://github.com/carlos-morcillo/ng-hub-ui-portal/issues"
+	},
+	"homepage": "https://www.carlosmorcillo.com/",
+	"license": "MIT",
 	"peerDependencies": {
 		"@angular/common": ">=16.0.0",
 		"@angular/core": ">=16.0.0",
@@ -9,5 +39,15 @@
 	"dependencies": {
 		"tslib": "^2.3.0"
 	},
-	"sideEffects": false
+	"sideEffects": false,
+	"engines": {
+		"node": ">=16.0.0"
+	},
+	"publishConfig": {
+		"access": "public"
+	},
+	"funding": {
+		"type": "buymeacoffee",
+		"url": "https://buymeacoffee.com/carlosmorcillo"
+	}
 }

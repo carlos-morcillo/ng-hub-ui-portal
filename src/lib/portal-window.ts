@@ -12,16 +12,14 @@ import {
 	ViewChild,
 	ViewEncapsulation
 } from '@angular/core';
-import { fromEvent, Observable, Subject, zip } from 'rxjs';
-import { filter, switchMap, take, takeUntil, tap } from 'rxjs/operators';
-import { PortalDismissReasons } from './portal-dismiss-reasons';
 import {
-	isString,
-	reflow,
 	getFocusableBoundaryElements,
 	hubRunTransition,
+	reflow,
 	TransitionOptions
 } from 'ng-hub-ui-utils';
+import { Observable, Subject, zip } from 'rxjs';
+import { take } from 'rxjs/operators';
 
 @Component({
 	selector: 'hub-portal-window',
@@ -41,9 +39,6 @@ import {
 			#dialog
 			[class]="
 				'portal-dialog' +
-				(size ? ' portal-' + size : '') +
-				(centered ? ' portal-dialog-centered' : '') +
-				fullscreenClass +
 				(scrollable ? ' portal-dialog-scrollable' : '') +
 				(portalDialogClass ? ' ' + portalDialogClass : '')
 			"
@@ -96,12 +91,7 @@ export class HubPortalWindow implements OnInit, OnDestroy {
 	@Input() animation: boolean;
 	@Input() ariaLabelledBy: string;
 	@Input() ariaDescribedBy: string;
-	@Input() backdrop: boolean | string = true;
-	@Input() centered: string;
-	@Input() fullscreen: string | boolean;
-	@Input() keyboard = true;
 	@Input() scrollable: string;
-	@Input() size: string;
 	@Input() windowClass: string;
 	@Input() portalDialogClass: string;
 	@Input() portalContentClass: string;
@@ -112,14 +102,6 @@ export class HubPortalWindow implements OnInit, OnDestroy {
 
 	shown = new Subject<void>();
 	hidden = new Subject<void>();
-
-	get fullscreenClass(): string {
-		return this.fullscreen === true
-			? ' portal-fullscreen'
-			: isString(this.fullscreen)
-			? ` portal-fullscreen-${this.fullscreen}-down`
-			: '';
-	}
 
 	dismiss(reason): void {
 		this.dismissEvent.emit(reason);
@@ -200,73 +182,7 @@ export class HubPortalWindow implements OnInit, OnDestroy {
 			this.shown.complete();
 		});
 
-		this._enableEventHandling();
 		this._setFocus();
-	}
-
-	private _enableEventHandling() {
-		const { nativeElement } = this._elRef;
-		this._zone.runOutsideAngular(() => {
-			fromEvent<KeyboardEvent>(nativeElement, 'keydown')
-				.pipe(
-					takeUntil(this._closed$),
-					filter((e) => e.key === 'Escape')
-				)
-				.subscribe((event) => {
-					if (this.keyboard) {
-						requestAnimationFrame(() => {
-							if (!event.defaultPrevented) {
-								this._zone.run(() =>
-									this.dismiss(PortalDismissReasons.ESC)
-								);
-							}
-						});
-					} else if (this.backdrop === 'static') {
-						this._bumpBackdrop();
-					}
-				});
-
-			// We're listening to 'mousedown' and 'mouseup' to prevent portal from closing when pressing the mouse
-			// inside the portal dialog and releasing it outside
-			let preventClose = false;
-			fromEvent<MouseEvent>(this._dialogEl.nativeElement, 'mousedown')
-				.pipe(
-					takeUntil(this._closed$),
-					tap(() => (preventClose = false)),
-					switchMap(() =>
-						fromEvent<MouseEvent>(nativeElement, 'mouseup').pipe(
-							takeUntil(this._closed$),
-							take(1)
-						)
-					),
-					filter(({ target }) => nativeElement === target)
-				)
-				.subscribe(() => {
-					preventClose = true;
-				});
-
-			// We're listening to 'click' to dismiss portal on portal window click, except when:
-			// 1. clicking on portal dialog itself
-			// 2. closing was prevented by mousedown/up handlers
-			// 3. clicking on scrollbar when the viewport is too small and portal doesn't fit (click is not triggered at all)
-			fromEvent<MouseEvent>(nativeElement, 'click')
-				.pipe(takeUntil(this._closed$))
-				.subscribe(({ target }) => {
-					if (nativeElement === target) {
-						if (this.backdrop === 'static') {
-							this._bumpBackdrop();
-						} else if (this.backdrop === true && !preventClose) {
-							this._zone.run(() =>
-								this.dismiss(
-									PortalDismissReasons.BACKDROP_CLICK
-								)
-							);
-						}
-					}
-
-					preventClose = false;
-				});
-		});
 	}
 
 	private _disableEventHandling() {
@@ -302,19 +218,5 @@ export class HubPortalWindow implements OnInit, OnDestroy {
 			setTimeout(() => elementToFocus.focus());
 			this._elWithFocus = null;
 		});
-	}
-
-	private _bumpBackdrop() {
-		if (this.backdrop === 'static') {
-			hubRunTransition(
-				this._zone,
-				this._elRef.nativeElement,
-				({ classList }) => {
-					classList.add('portal-static');
-					return () => classList.remove('portal-static');
-				},
-				{ animation: this.animation, runningTransition: 'continue' }
-			);
-		}
 	}
 }

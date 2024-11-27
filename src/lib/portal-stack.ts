@@ -395,12 +395,6 @@ export class HubPortalStack {
 			elementInjector
 		});
 
-		if (options.data) {
-			Object.assign(componentRef.instance, {
-				data: options.data
-			});
-		}
-
 		const componentNativeEl: HTMLElement =
 			componentRef.location.nativeElement;
 		if (options.scrollable) {

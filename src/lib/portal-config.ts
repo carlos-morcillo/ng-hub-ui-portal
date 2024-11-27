@@ -39,34 +39,12 @@ export interface HubPortalOptions {
 	beforeDismiss?: () => boolean | Promise<boolean>;
 
 	/**
-	 * If `true`, the portal will be centered vertically.
-	 *
-	 * Default value is `false`.
-	 *
-	 * @since 1.1.0
-	 */
-	centered?: boolean;
-
-	/**
 	 * A selector specifying the element all new portal windows should be appended to.
 	 * Since v5.3.0 it is also possible to pass the reference to an `HTMLElement`.
 	 *
 	 * If not specified, will be `body`.
 	 */
 	container?: string | HTMLElement;
-
-	/**
-	 * If `true` portal will always be displayed in fullscreen mode.
-	 *
-	 * For values like `'md'` it means that portal will be displayed in fullscreen mode
-	 * only if the viewport width is below `'md'`. For custom strings (ex. when passing `'mysize'`)
-	 * it will add a `'portal-fullscreen-mysize-down'` class.
-	 *
-	 * If not specified will be `false`.
-	 *
-	 * @since 12.1.0
-	 */
-	fullscreen?: 'sm' | 'md' | 'lg' | 'xl' | 'xxl' | boolean | string;
 
 	/**
 	 * The `Injector` to use for portal content.
@@ -86,11 +64,6 @@ export interface HubPortalOptions {
 	 * @since 5.0.0
 	 */
 	scrollable?: boolean;
-
-	/**
-	 * Size of a new portal window.
-	 */
-	size?: 'sm' | 'lg' | 'xl' | string;
 
 	/**
 	 * A custom class to append to the portal window.
@@ -137,12 +110,6 @@ export interface HubPortalOptions {
 	 * will close the portal window. This allows for customization of the elements that can act as close buttons for the portal.
 	 */
 	closeSelector?: string;
-
-	/** Used to store any additional data that needs to be passed to the portal window when it is opened. This property allows you
-	 * to provide custom data to the portal component, which can then be accessed and utilized within the portal content or logic.
-	 * It provides flexibility for passing dynamic information to the portal window based on the specific use case or requirements.
-	 */
-	data?: any;
 }
 
 /**
@@ -154,9 +121,6 @@ export type HubPortalUpdatableOptions = Pick<
 	HubPortalOptions,
 	| 'ariaLabelledBy'
 	| 'ariaDescribedBy'
-	| 'centered'
-	| 'fullscreen'
-	| 'size'
 	| 'windowClass'
 	| 'portalDialogClass'
 	| 'portalContentClass'
@@ -177,15 +141,11 @@ export class HubPortalConfig implements Required<HubPortalOptions> {
 
 	ariaLabelledBy: string;
 	ariaDescribedBy: string;
-	backdrop: boolean | 'static' = false;
 	beforeDismiss: () => boolean | Promise<boolean>;
-	centered: boolean;
 	container: string | HTMLElement;
-	fullscreen: 'sm' | 'md' | 'lg' | 'xl' | 'xxl' | boolean | string = false;
 	injector: Injector;
 	keyboard = true;
 	scrollable: boolean;
-	size: 'sm' | 'lg' | 'xl' | string;
 	windowClass: string;
 	portalDialogClass: string;
 	portalContentClass: string;
@@ -193,7 +153,6 @@ export class HubPortalConfig implements Required<HubPortalOptions> {
 	footerSelector: string;
 	dismissSelector: string = '[data-dismiss="portal"]';
 	closeSelector: string = '[data-close="portal"]';
-	data: any;
 
 	get animation(): boolean {
 		return this._animation ?? true /* this._hubConfig.animation */;
