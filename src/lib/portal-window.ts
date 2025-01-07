@@ -1,4 +1,4 @@
-import { DOCUMENT, NgIf } from '@angular/common';
+import { DOCUMENT } from '@angular/common';
 import {
 	Component,
 	ElementRef,
@@ -22,60 +22,58 @@ import { Observable, Subject, zip } from 'rxjs';
 import { take } from 'rxjs/operators';
 
 @Component({
-	selector: 'hub-portal-window',
-	standalone: true,
-	imports: [NgIf],
-	host: {
-		'[class]': '"portal d-block" + (windowClass ? " " + windowClass : "")',
-		'[class.fade]': 'animation',
-		role: 'dialog',
-		tabindex: '-1',
-		'[attr.aria-portal]': 'true',
-		'[attr.aria-labelledby]': 'ariaLabelledBy',
-		'[attr.aria-describedby]': 'ariaDescribedBy'
-	},
-	template: `
+    selector: 'hub-portal-window',
+    imports: [],
+    host: {
+        '[class]': '"portal d-block" + (windowClass ? " " + windowClass : "")',
+        '[class.fade]': 'animation',
+        role: 'dialog',
+        tabindex: '-1',
+        '[attr.aria-portal]': 'true',
+        '[attr.aria-labelledby]': 'ariaLabelledBy',
+        '[attr.aria-describedby]': 'ariaDescribedBy'
+    },
+    template: `
 		<div
-			#dialog
+		  #dialog
 			[class]="
 				'portal-dialog' +
 				(scrollable ? ' portal-dialog-scrollable' : '') +
 				(portalDialogClass ? ' ' + portalDialogClass : '')
 			"
-			role="document"
-		>
-			<div
+		  role="document"
+		  >
+		  <div
 				[class]="
 					'portal-content' +
 					(portalContentClass ? ' ' + portalContentClass : '')
 				"
-			>
-				<ng-container *ngIf="singleContent; else multipleContent">
-					<ng-content></ng-content>
-				</ng-container>
-				<ng-template #multipleContent>
-					<div class="portal-header">
-						<ng-content />
-						<button
-							type="button"
-							class="btn-close"
-							data-bs-dismiss="portal"
-							aria-label="Close"
-							(click)="dismiss(null)"
-						></button>
-					</div>
-					<div class="portal-body">
-						<ng-content />
-					</div>
-					<div class="portal-footer">
-						<ng-content />
-					</div>
-				</ng-template>
-			</div>
+		    >
+		    @if (singleContent) {
+		      <ng-content></ng-content>
+		    } @else {
+		      <div class="portal-header">
+		        <ng-content />
+		        <button
+		          type="button"
+		          class="btn-close"
+		          data-bs-dismiss="portal"
+		          aria-label="Close"
+		          (click)="dismiss(null)"
+		        ></button>
+		      </div>
+		      <div class="portal-body">
+		        <ng-content />
+		      </div>
+		      <div class="portal-footer">
+		        <ng-content />
+		      </div>
+		    }
+		  </div>
 		</div>
-	`,
-	encapsulation: ViewEncapsulation.None,
-	styleUrl: './portal.scss'
+		`,
+    encapsulation: ViewEncapsulation.None,
+    styleUrl: './portal.scss'
 })
 export class HubPortalWindow implements OnInit, OnDestroy {
 	private _document = inject(DOCUMENT);
