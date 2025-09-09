@@ -137,20 +137,20 @@ export type HubPortalUpdatableOptions = Pick<
 @Injectable({ providedIn: 'root' })
 export class HubPortalConfig implements Required<HubPortalOptions> {
 	// private _hubConfig = inject(HubConfig);
-	private _animation: boolean;
+    private _animation?: boolean;
 
-	ariaLabelledBy: string;
-	ariaDescribedBy: string;
-	beforeDismiss: () => boolean | Promise<boolean>;
-	container: string | HTMLElement;
-	injector: Injector;
+    ariaLabelledBy!: string;
+    ariaDescribedBy!: string;
+    beforeDismiss!: () => boolean | Promise<boolean>;
+    container!: string | HTMLElement;
+    injector!: Injector;
 	keyboard = true;
-	scrollable: boolean;
-	windowClass: string;
-	portalDialogClass: string;
-	portalContentClass: string;
-	headerSelector: string;
-	footerSelector: string;
+    scrollable!: boolean;
+    windowClass!: string;
+    portalDialogClass!: string;
+    portalContentClass!: string;
+    headerSelector!: string;
+    footerSelector!: string;
 	dismissSelector: string = '[data-dismiss="portal"]';
 	closeSelector: string = '[data-close="portal"]';
 

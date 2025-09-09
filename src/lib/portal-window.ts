@@ -1,22 +1,21 @@
 import { DOCUMENT } from '@angular/common';
 import {
-	Component,
-	ElementRef,
-	EventEmitter,
-	inject,
-	Input,
-	NgZone,
-	OnDestroy,
-	OnInit,
-	Output,
-	ViewChild,
-	ViewEncapsulation
+  Component,
+  ElementRef,
+  inject,
+  NgZone,
+  OnDestroy,
+  OnInit,
+  ViewEncapsulation,
+  input,
+  output,
+  viewChild
 } from '@angular/core';
 import {
-	getFocusableBoundaryElements,
-	hubRunTransition,
-	reflow,
-	TransitionOptions
+    getFocusableBoundaryElements,
+    hubRunTransition,
+    reflow,
+    TransitionOptions
 } from 'ng-hub-ui-utils';
 import { Observable, Subject, zip } from 'rxjs';
 import { take } from 'rxjs/operators';
@@ -25,28 +24,28 @@ import { take } from 'rxjs/operators';
     selector: 'hub-portal-window',
     imports: [],
     host: {
-        '[class]': '"portal d-block" + (windowClass ? " " + windowClass : "")',
-        '[class.fade]': 'animation',
+        '[class]': '"portal d-block" + (windowClass() ? " " + windowClass() : "")',
+        '[class.fade]': 'animation()',
         role: 'dialog',
         tabindex: '-1',
         '[attr.aria-portal]': 'true',
-        '[attr.aria-labelledby]': 'ariaLabelledBy',
-        '[attr.aria-describedby]': 'ariaDescribedBy'
+        '[attr.aria-labelledby]': 'ariaLabelledBy()',
+        '[attr.aria-describedby]': 'ariaDescribedBy()'
     },
     template: `
 		<div
 		  #dialog
 			[class]="
 				'portal-dialog' +
-				(scrollable ? ' portal-dialog-scrollable' : '') +
-				(portalDialogClass ? ' ' + portalDialogClass : '')
+				(scrollable() ? ' portal-dialog-scrollable' : '') +
+				(portalDialogClass() ? ' ' + portalDialogClass() : '')
 			"
 		  role="document"
 		  >
 		  <div
 				[class]="
 					'portal-content' +
-					(portalContentClass ? ' ' + portalContentClass : '')
+					(portalContentClass() ? ' ' + portalContentClass() : '')
 				"
 		    >
 		    @if (singleContent) {
@@ -83,27 +82,26 @@ export class HubPortalWindow implements OnInit, OnDestroy {
 	private _closed$ = new Subject<void>();
 	private _elWithFocus: Element | null = null; // element that is focused prior to portal opening
 
-	@ViewChild('dialog', { static: true })
-	private _dialogEl: ElementRef<HTMLElement>;
+    private readonly _dialogEl = viewChild.required<ElementRef<HTMLElement>>('dialog');
 
-	@Input() animation: boolean;
-	@Input() ariaLabelledBy: string;
-	@Input() ariaDescribedBy: string;
-	@Input() scrollable: string;
-	@Input() windowClass: string;
-	@Input() portalDialogClass: string;
-	@Input() portalContentClass: string;
+    readonly animation = input<boolean>(true);
+    readonly ariaLabelledBy = input<string>();
+    readonly ariaDescribedBy = input<string>();
+    readonly scrollable = input<string>();
+    readonly windowClass = input<string>();
+    readonly portalDialogClass = input<string>();
+    readonly portalContentClass = input<string>();
 
 	singleContent!: boolean;
 
-	@Output('dismiss') dismissEvent = new EventEmitter();
+	readonly dismissEvent = output({ alias: 'dismiss' });
 
 	shown = new Subject<void>();
 	hidden = new Subject<void>();
 
-	dismiss(reason): void {
-		this.dismissEvent.emit(reason);
-	}
+    dismiss(reason: any): void {
+        this.dismissEvent.emit(reason);
+    }
 
 	ngOnInit() {
 		this._elWithFocus = this._document.activeElement;
@@ -122,7 +120,7 @@ export class HubPortalWindow implements OnInit, OnDestroy {
 	hide(): Observable<any> {
 		const { nativeElement } = this._elRef;
 		const context: TransitionOptions<any> = {
-			animation: this.animation,
+			animation: this.animation(),
 			runningTransition: 'stop'
 		};
 
@@ -134,7 +132,7 @@ export class HubPortalWindow implements OnInit, OnDestroy {
 		);
 		const dialogTransition$ = hubRunTransition(
 			this._zone,
-			this._dialogEl.nativeElement,
+			this._dialogEl().nativeElement,
 			() => {},
 			context
 		);
@@ -153,7 +151,7 @@ export class HubPortalWindow implements OnInit, OnDestroy {
 
 	private _show() {
 		const context: TransitionOptions<any> = {
-			animation: this.animation,
+			animation: this.animation(),
 			runningTransition: 'continue'
 		};
 
@@ -170,7 +168,7 @@ export class HubPortalWindow implements OnInit, OnDestroy {
 		);
 		const dialogTransition$ = hubRunTransition(
 			this._zone,
-			this._dialogEl.nativeElement,
+			this._dialogEl().nativeElement,
 			() => {},
 			context
 		);
@@ -202,19 +200,19 @@ export class HubPortalWindow implements OnInit, OnDestroy {
 		}
 	}
 
-	private _restoreFocus() {
-		const body = this._document.body;
-		const elWithFocus = this._elWithFocus;
+    private _restoreFocus() {
+        const body = this._document.body;
+        const elWithFocus = this._elWithFocus;
 
-		let elementToFocus;
-		if (elWithFocus && elWithFocus['focus'] && body.contains(elWithFocus)) {
-			elementToFocus = elWithFocus;
-		} else {
-			elementToFocus = body;
-		}
-		this._zone.runOutsideAngular(() => {
-			setTimeout(() => elementToFocus.focus());
-			this._elWithFocus = null;
-		});
-	}
+        let elementToFocus: HTMLElement;
+        if (elWithFocus instanceof HTMLElement && body.contains(elWithFocus)) {
+            elementToFocus = elWithFocus;
+        } else {
+            elementToFocus = body as unknown as HTMLElement;
+        }
+        this._zone.runOutsideAngular(() => {
+            setTimeout(() => elementToFocus.focus());
+            this._elWithFocus = null;
+        });
+    }
 }

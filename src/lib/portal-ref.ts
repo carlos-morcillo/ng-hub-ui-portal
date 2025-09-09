@@ -58,11 +58,13 @@ export class HubPortalRef {
 		windowInstance: HubPortalWindow,
 		options: HubPortalOptions
 	): void {
-		WINDOW_ATTRIBUTES.forEach((optionName: string) => {
-			if (isDefined(options[optionName])) {
-				windowInstance[optionName] = options[optionName];
-			}
-		});
+    WINDOW_ATTRIBUTES.forEach((optionName: string) => {
+        const opts: any = options as any;
+        const win: any = windowInstance as any;
+        if (isDefined(opts[optionName])) {
+            win[optionName] = opts[optionName];
+        }
+    });
 	}
 
 	/**
@@ -175,15 +177,15 @@ export class HubPortalRef {
 				this._dismiss(reason);
 			} else {
 				const dismiss = this._beforeDismiss();
-				if (isPromise(dismiss)) {
-					dismiss.then(
-						(result) => {
-							if (result !== false) {
-								this._dismiss(reason);
-							}
-						},
-						() => {}
-					);
+            if (isPromise(dismiss as any)) {
+                (dismiss as Promise<boolean>).then(
+                    (result) => {
+                        if (result !== false) {
+                            this._dismiss(reason);
+                        }
+                    },
+                    () => {}
+                );
 				} else if (dismiss !== false) {
 					this._dismiss(reason);
 				}

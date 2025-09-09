@@ -336,15 +336,15 @@ export class HubPortalStack {
 		activePortal: HubActivePortal,
 		options: HubPortalOptions
 	): ContentRef {
-		const context = {
-			$implicit: activePortal,
-			close(result) {
-				activePortal.close(result);
-			},
-			dismiss(reason) {
-				activePortal.dismiss(reason);
-			}
-		};
+        const context = {
+            $implicit: activePortal,
+            close(result: any) {
+                activePortal.close(result);
+            },
+            dismiss(reason: any) {
+                activePortal.dismiss(reason);
+            }
+        };
 		const viewRef = templateRef.createEmbeddedView(context);
 		this._applicationRef.attachView(viewRef);
 
