@@ -1,6 +1,53 @@
 # ng-hub-ui-portal
 
+[Español](./README.es.md) | **English**
+
 A lightweight and flexible Angular portal library for dynamically rendering components and templates in any DOM container. Part of the ng-hub-ui suite of Angular components, this library provides a streamlined way to manage dynamic content rendering with full control over positioning and interaction.
+
+## Documentation and Live Examples
+
+This package is part of [Hub UI](https://hubui.dev/), a collection of Angular component libraries for standalone apps.
+
+- Docs: https://hubui.dev/portal/overview/
+- Live examples: https://hubui.dev/portal/examples/
+- Hub UI: https://hubui.dev/
+
+## 🧩 Library Family `ng-hub-ui`
+
+This library is part of the **ng-hub-ui** ecosystem:
+
+- [**ng-hub-ui-accordion**](https://www.npmjs.com/package/ng-hub-ui-accordion)
+- [**ng-hub-ui-action-sheet**](https://www.npmjs.com/package/ng-hub-ui-action-sheet)
+- [**ng-hub-ui-avatar**](https://www.npmjs.com/package/ng-hub-ui-avatar)
+- [**ng-hub-ui-board**](https://www.npmjs.com/package/ng-hub-ui-board)
+- [**ng-hub-ui-breadcrumbs**](https://www.npmjs.com/package/ng-hub-ui-breadcrumbs)
+- [**ng-hub-ui-calendar**](https://www.npmjs.com/package/ng-hub-ui-calendar)
+- [**ng-hub-ui-dropdown**](https://www.npmjs.com/package/ng-hub-ui-dropdown)
+- [**ng-hub-ui-history**](https://www.npmjs.com/package/ng-hub-ui-history)
+- [**ng-hub-ui-modal**](https://www.npmjs.com/package/ng-hub-ui-modal)
+- [**ng-hub-ui-nav**](https://www.npmjs.com/package/ng-hub-ui-nav)
+- [**ng-hub-ui-paginable**](https://www.npmjs.com/package/ng-hub-ui-paginable)
+- [**ng-hub-ui-portal**](https://www.npmjs.com/package/ng-hub-ui-portal) ← You are here
+- [**ng-hub-ui-sortable**](https://www.npmjs.com/package/ng-hub-ui-sortable)
+- [**ng-hub-ui-stepper**](https://www.npmjs.com/package/ng-hub-ui-stepper)
+- [**ng-hub-ui-utils**](https://www.npmjs.com/package/ng-hub-ui-utils)
+
+## Table of Contents
+
+- [Overview](#overview)
+- [Installation](#installation)
+- [Core Features](#core-features)
+- [Basic Usage](#basic-usage)
+- [Container Management](#container-management)
+- [Portal Opening Strategies](#portal-opening-strategies)
+- [Working with Component Data](#working-with-component-data)
+- [Configuration Options](#configuration-options)
+- [Portal Reference](#portal-reference)
+- [Global Configuration](#global-configuration)
+- [Portal Stack Management](#portal-stack-management)
+- [Accessibility](#accessibility)
+- [Support the Project](#support-the-project)
+- [License](#license)
 
 ## Overview
 

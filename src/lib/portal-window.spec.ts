@@ -1,5 +1,4 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-
 import { HubPortalWindow } from './portal-window';
 
 describe('hub-portal-dialog', () => {
@@ -22,7 +21,7 @@ describe('hub-portal-dialog', () => {
 		});
 
 		it('should render default portal window with a specified class', () => {
-			fixture.componentInstance.windowClass = 'custom-class';
+			fixture.componentRef.setInput('windowClass', 'custom-class');
 			fixture.detectChanges();
 
 			expect(fixture.nativeElement).toHaveClass('custom-class');
@@ -38,7 +37,10 @@ describe('hub-portal-dialog', () => {
 		});
 
 		it('should render portal dialog with a specified class', () => {
-			fixture.componentInstance.portalDialogClass = 'custom-dialog-class';
+			fixture.componentRef.setInput(
+				'portalDialogClass',
+				'custom-dialog-class'
+			);
 			fixture.detectChanges();
 
 			const dialogEl: Element =
@@ -48,8 +50,10 @@ describe('hub-portal-dialog', () => {
 		});
 
 		it('should render portal content with a specified class', () => {
-			fixture.componentInstance.portalContentClass =
-				'custom-content-class';
+			fixture.componentRef.setInput(
+				'portalContentClass',
+				'custom-content-class'
+			);
 			fixture.detectChanges();
 
 			const contentEl: Element =
