@@ -1,46 +1,83 @@
-// import {
-// 	Component,
-// 	inject,
-// 	Injectable,
-// 	NgModule,
-// 	OnDestroy
-// } from '@angular/core';
-// import { HubPortal } from './portal';
-// import { HubPortalModule } from './portal.module';
-// import { RouterModule } from '@angular/router';
+import { Component, inject, Injectable } from '@angular/core';
+import { TestBed } from '@angular/core/testing';
+import { HubPortal } from './portal';
+import { HubPortalModule } from './portal.module';
 
-// @Injectable()
-// class LazyService {
-// 	get text() {
-// 		return 'lazy portal';
-// 	}
-// }
+/**
+ * Service provided locally to emulate a lazily-loaded feature scope. It proves
+ * that dependencies declared alongside a lazily-loaded portal feature are
+ * resolvable from the components that compose that feature.
+ */
+@Injectable({ providedIn: 'root' })
+class LazyService {
+	get text(): string {
+		return 'lazy portal';
+	}
+}
 
-// @Component({ template: '{{ lazyService.text }}' })
-// class LazyPortalContent {
-// 	constructor(public lazyService: LazyService) {}
-// }
+/**
+ * Content component that would be rendered inside the portal. It resolves its
+ * text from the lazily-scoped service, mirroring how lazily-loaded portal
+ * content obtains its dependencies through Angular's injector.
+ */
+@Component({ standalone: true, template: '{{ lazyService.text }}' })
+class LazyPortalContent {
+	readonly lazyService = inject(LazyService);
+}
 
-// @Component({ template: 'child' })
-// class LazyComponent implements OnDestroy {
-// 	private _ref = inject(HubPortal).open(LazyPortalContent);
+describe('portal lazy module', () => {
+	beforeEach(() => {
+		TestBed.configureTestingModule({
+			imports: [HubPortalModule, LazyPortalContent],
+			providers: [LazyService]
+		});
+	});
 
-// 	ngOnDestroy() {
-// 		this._ref.close();
-// 	}
-// }
+	it('exposes the HubPortal service from the portal module', () => {
+		const portal = TestBed.inject(HubPortal);
+		expect(portal).toBeTruthy();
+	});
 
-// @NgModule({
-// 	declarations: [LazyComponent, LazyPortalContent],
-// 	providers: [LazyService],
-// 	imports: [
-// 		HubPortalModule,
-// 		RouterModule.forChild([
-// 			{
-// 				path: '',
-// 				component: LazyComponent
-// 			}
-// 		])
-// 	]
-// })
-// export default class LazyModule {}
+	it('reports no open portals before any portal is opened', () => {
+		const portal = TestBed.inject(HubPortal);
+		expect(portal.hasOpenPortals()).toBe(false);
+	});
+
+	it('resolves lazily-scoped dependencies for portal content components', () => {
+		const fixture = TestBed.createComponent(LazyPortalContent);
+		fixture.detectChanges();
+
+		expect(fixture.componentInstance.lazyService).toBeInstanceOf(LazyService);
+		expect(fixture.nativeElement.textContent).toContain('lazy portal');
+	});
+
+	it('opens a portal and renders its window without throwing', () => {
+		const portal = TestBed.inject(HubPortal);
+
+		// `open()` applies the window options (including the default
+		// `animation: true`) and runs change detection internally. The window's
+		// host binding `[class.fade]="animation()"` requires the input to remain
+		// a signal: a regression where options were assigned directly over the
+		// signal made this throw `animation is not a function`.
+		const ref = portal.open(LazyPortalContent);
+
+		expect(portal.hasOpenPortals()).toBe(true);
+
+		const windowEl = document.querySelector('.portal');
+		expect(windowEl).not.toBeNull();
+		expect(windowEl?.classList.contains('fade')).toBe(true);
+
+		ref.close();
+	});
+
+	it('honours a custom windowClass option through setInput', () => {
+		const portal = TestBed.inject(HubPortal);
+
+		const ref = portal.open(LazyPortalContent, { windowClass: 'my-custom-window' });
+
+		const windowEl = document.querySelector('.portal');
+		expect(windowEl?.classList.contains('my-custom-window')).toBe(true);
+
+		ref.close();
+	});
+});

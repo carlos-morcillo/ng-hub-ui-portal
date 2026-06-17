@@ -54,17 +54,17 @@ export class HubPortalRef {
 	private _resolve!: (result?: any) => void;
 	private _reject!: (reason?: any) => void;
 
-	private _applyWindowOptions(
-		windowInstance: HubPortalWindow,
-		options: HubPortalOptions
-	): void {
-    WINDOW_ATTRIBUTES.forEach((optionName: string) => {
-        const opts: any = options as any;
-        const win: any = windowInstance as any;
-        if (isDefined(opts[optionName])) {
-            win[optionName] = opts[optionName];
-        }
-    });
+	private _applyWindowOptions(options: HubPortalOptions): void {
+		const opts: any = options as any;
+		WINDOW_ATTRIBUTES.forEach((optionName: string) => {
+			if (isDefined(opts[optionName])) {
+				// `HubPortalWindow` exposes these as signal inputs (read-only
+				// functions). They must be set through `setInput`; a direct
+				// instance assignment would overwrite the signal itself and break
+				// host bindings like `[class.fade]="animation()"`.
+				this._windowCmptRef.setInput(optionName, opts[optionName]);
+			}
+		});
 	}
 
 	/**
@@ -73,7 +73,7 @@ export class HubPortalRef {
 	 * @since 14.2.0
 	 */
 	update(options: HubPortalUpdatableOptions): void {
-		this._applyWindowOptions(this._windowCmptRef.instance, options);
+		this._applyWindowOptions(options);
 	}
 
 	/**
@@ -199,7 +199,7 @@ export class HubPortalRef {
 		// hiding window
 		windowTransition$.subscribe(() => {
 			const { nativeElement } = this._windowCmptRef.location;
-			nativeElement.parentNode.removeChild(nativeElement);
+			nativeElement.parentNode?.removeChild(nativeElement);
 			this._windowCmptRef.destroy();
 			this._contentRef?.viewRef?.destroy();
 
