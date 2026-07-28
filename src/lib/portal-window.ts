@@ -28,7 +28,6 @@ import { take } from 'rxjs/operators';
         '[class.fade]': 'animation()',
         role: 'dialog',
         tabindex: '-1',
-        '[attr.aria-portal]': 'true',
         '[attr.aria-labelledby]': 'ariaLabelledBy()',
         '[attr.aria-describedby]': 'ariaDescribedBy()'
     },
