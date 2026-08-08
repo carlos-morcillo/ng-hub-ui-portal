@@ -6,11 +6,11 @@ Una librería de portales para Angular ligera y flexible que permite renderizar 
 
 ## Documentación y ejemplos en vivo
 
-Este paquete forma parte de [Hub UI](https://hubui.dev/), una colección de librerías de componentes Angular para aplicaciones standalone.
+Este paquete forma parte de [Hub UI](https://hubui.dev/en/), una colección de librerías de componentes Angular para aplicaciones standalone.
 
-- Documentación: https://hubui.dev/portal/overview/
-- Ejemplos en vivo: https://hubui.dev/portal/examples/
-- Hub UI: https://hubui.dev/
+- Documentación: https://hubui.dev/en/portal/overview/
+- Ejemplos en vivo: https://hubui.dev/en/portal/examples/
+- Hub UI: https://hubui.dev/en/
 
 ## 🧩 Familia de librerías `ng-hub-ui`
 
