@@ -12,13 +12,7 @@ import {
 	TemplateRef,
 	Type
 } from '@angular/core';
-import {
-	ContentRef,
-	hubFocusTrap,
-	isDefined,
-	isString,
-	ScrollBar
-} from 'ng-hub-ui-utils';
+import { ContentRef, hubFocusTrap, isDefined, isString, ScrollBar } from 'ng-hub-ui-utils';
 import { Subject } from 'rxjs';
 import { take } from 'rxjs/operators';
 import { HubPortalOptions, HubPortalUpdatableOptions } from './portal-config';
@@ -46,13 +40,8 @@ export class HubPortalStack {
 		// Trap focus on active WindowCmpt
 		this._activeWindowCmptHasChanged.subscribe(() => {
 			if (this._windowCmpts.length) {
-				const activeWindowCmpt =
-					this._windowCmpts[this._windowCmpts.length - 1];
-				hubFocusTrap(
-					ngZone,
-					activeWindowCmpt.location.nativeElement,
-					this._activeWindowCmptHasChanged
-				);
+				const activeWindowCmpt = this._windowCmpts[this._windowCmpts.length - 1];
+				hubFocusTrap(ngZone, activeWindowCmpt.location.nativeElement, this._activeWindowCmptHasChanged);
 				this._revertAriaHidden();
 				this._setAriaHidden(activeWindowCmpt.location.nativeElement);
 			}
@@ -73,24 +62,16 @@ export class HubPortalStack {
 		}
 	}
 
-	open(
-		contentInjector: Injector,
-		content: any,
-		options: HubPortalOptions
-	): HubPortalRef {
+	open(contentInjector: Injector, content: any, options: HubPortalOptions): HubPortalRef {
 		const containerEl =
 			options.container instanceof HTMLElement
 				? options.container
 				: isDefined(options.container)
-				? this._document.querySelector(options.container!)
-				: this._document.body;
+					? this._document.querySelector(options.container!)
+					: this._document.body;
 
 		if (!containerEl) {
-			throw new Error(
-				`The specified portal container "${
-					options.container || 'body'
-				}" was not found in the DOM.`
-			);
+			throw new Error(`The specified portal container "${options.container || 'body'}" was not found in the DOM.`);
 		}
 
 		this._hideScrollBar();
@@ -98,25 +79,12 @@ export class HubPortalStack {
 		const activePortal = new HubActivePortal();
 
 		contentInjector = options.injector || contentInjector;
-		const environmentInjector =
-			contentInjector.get(EnvironmentInjector, null) ||
-			this._environmentInjector;
-		const contentRef = this._getContentRef(
-			contentInjector,
-			environmentInjector,
-			content,
-			activePortal,
-			options
-		);
+		const environmentInjector = contentInjector.get(EnvironmentInjector, null) || this._environmentInjector;
+		const contentRef = this._getContentRef(contentInjector, environmentInjector, content, activePortal, options);
 
-		const windowCmptRef: ComponentRef<HubPortalWindow> =
-			this._createWindowComponent(contentRef.nodes, options);
+		const windowCmptRef: ComponentRef<HubPortalWindow> = this._createWindowComponent(contentRef.nodes, options);
 		this._attachWindowComponent(containerEl, windowCmptRef);
-		const hubPortalRef: HubPortalRef = new HubPortalRef(
-			windowCmptRef,
-			contentRef,
-			options.beforeDismiss
-		);
+		const hubPortalRef: HubPortalRef = new HubPortalRef(windowCmptRef, contentRef, options.beforeDismiss);
 
 		this._registerPortalRef(hubPortalRef);
 		this._registerWindowCmpt(windowCmptRef);
@@ -163,11 +131,7 @@ export class HubPortalStack {
 	 * @param options - Portal configuration options
 	 * @returns A reference to the newly created portal
 	 */
-	toggle(
-		contentInjector: Injector,
-		content: any,
-		options: HubPortalOptions
-	): HubPortalRef {
+	toggle(contentInjector: Injector, content: any, options: HubPortalOptions): HubPortalRef {
 		// Get current portals before creating the new one
 		const existingPortals = [...this._portalRefs];
 
@@ -176,43 +140,24 @@ export class HubPortalStack {
 			options.container instanceof HTMLElement
 				? options.container
 				: isDefined(options.container)
-				? this._document.querySelector(options.container!)
-				: this._document.body;
+					? this._document.querySelector(options.container!)
+					: this._document.body;
 
 		if (!containerEl) {
-			throw new Error(
-				`The specified portal container "${
-					options.container || 'body'
-				}" was not found in the DOM.`
-			);
+			throw new Error(`The specified portal container "${options.container || 'body'}" was not found in the DOM.`);
 		}
 
 		this._hideScrollBar();
 
 		const activePortal = new HubActivePortal();
 		contentInjector = options.injector || contentInjector;
-		const environmentInjector =
-			contentInjector.get(EnvironmentInjector, null) ||
-			this._environmentInjector;
+		const environmentInjector = contentInjector.get(EnvironmentInjector, null) || this._environmentInjector;
 
-		const contentRef = this._getContentRef(
-			contentInjector,
-			environmentInjector,
-			content,
-			activePortal,
-			options
-		);
+		const contentRef = this._getContentRef(contentInjector, environmentInjector, content, activePortal, options);
 
-		const windowCmptRef = this._createWindowComponent(
-			contentRef.nodes,
-			options
-		);
+		const windowCmptRef = this._createWindowComponent(contentRef.nodes, options);
 
-		const newPortalRef = new HubPortalRef(
-			windowCmptRef,
-			contentRef,
-			options.beforeDismiss
-		);
+		const newPortalRef = new HubPortalRef(windowCmptRef, contentRef, options.beforeDismiss);
 
 		// Setup active portal methods
 		activePortal.close = (result: any) => {
@@ -270,9 +215,7 @@ export class HubPortalStack {
 	}
 
 	dismissAll(reason?: any) {
-		this._portalRefs.forEach((hubPortalRef) =>
-			hubPortalRef.dismiss(reason)
-		);
+		this._portalRefs.forEach((hubPortalRef) => hubPortalRef.dismiss(reason));
 	}
 
 	hasOpenPortals(): boolean {
@@ -283,14 +226,11 @@ export class HubPortalStack {
 		[headerNodes, bodyNodes, footerNodes]: Node[][],
 		options: HubPortalOptions
 	): ComponentRef<HubPortalWindow> {
-		const singleContent =
-			!options.headerSelector && !options.footerSelector;
+		const singleContent = !options.headerSelector && !options.footerSelector;
 		let windowCmptRef = createComponent(HubPortalWindow, {
 			environmentInjector: this._applicationRef.injector,
 			elementInjector: this._injector,
-			projectableNodes: singleContent
-				? [bodyNodes]
-				: [[], headerNodes, bodyNodes, footerNodes]
+			projectableNodes: singleContent ? [bodyNodes] : [[], headerNodes, bodyNodes, footerNodes]
 		});
 
 		Object.assign(windowCmptRef.instance, { singleContent });
@@ -321,13 +261,7 @@ export class HubPortalStack {
 		} else if (isString(content)) {
 			return this._createFromString(content);
 		} else {
-			return this._createFromComponent(
-				contentInjector,
-				environmentInjector,
-				content,
-				activePortal,
-				options
-			);
+			return this._createFromComponent(contentInjector, environmentInjector, content, activePortal, options);
 		}
 	}
 
@@ -336,15 +270,15 @@ export class HubPortalStack {
 		activePortal: HubActivePortal,
 		options: HubPortalOptions
 	): ContentRef {
-        const context = {
-            $implicit: activePortal,
-            close(result: any) {
-                activePortal.close(result);
-            },
-            dismiss(reason: any) {
-                activePortal.dismiss(reason);
-            }
-        };
+		const context = {
+			$implicit: activePortal,
+			close(result: any) {
+				activePortal.close(result);
+			},
+			dismiss(reason: any) {
+				activePortal.dismiss(reason);
+			}
+		};
 		const viewRef = templateRef.createEmbeddedView(context);
 		this._applicationRef.attachView(viewRef);
 
@@ -356,19 +290,9 @@ export class HubPortalStack {
 
 		return new ContentRef(
 			[
-				options.headerSelector
-					? extractAndRemoveNodesBySelector(
-							containerNode,
-							options.headerSelector
-					  )
-					: [],
+				options.headerSelector ? extractAndRemoveNodesBySelector(containerNode, options.headerSelector) : [],
 				containerNode.childNodes as any,
-				options.footerSelector
-					? extractAndRemoveNodesBySelector(
-							containerNode,
-							options.footerSelector
-					  )
-					: []
+				options.footerSelector ? extractAndRemoveNodesBySelector(containerNode, options.footerSelector) : []
 			],
 			viewRef
 		);
@@ -395,8 +319,7 @@ export class HubPortalStack {
 			elementInjector
 		});
 
-		const componentNativeEl: HTMLElement =
-			componentRef.location.nativeElement;
+		const componentNativeEl: HTMLElement = componentRef.location.nativeElement;
 		if (options.scrollable) {
 			componentNativeEl.classList.add('component-host-scrollable');
 		}
@@ -409,19 +332,9 @@ export class HubPortalStack {
 		// and use `[Array.from(componentNativeEl.childNodes)]` instead and remove the above CSS class.
 		return new ContentRef(
 			[
-				options.headerSelector
-					? extractAndRemoveNodesBySelector(
-							componentNativeEl,
-							options.headerSelector
-					  )
-					: [],
+				options.headerSelector ? extractAndRemoveNodesBySelector(componentNativeEl, options.headerSelector) : [],
 				componentNativeEl.childNodes as any,
-				options.footerSelector
-					? extractAndRemoveNodesBySelector(
-							componentNativeEl,
-							options.footerSelector
-					  )
-					: []
+				options.footerSelector ? extractAndRemoveNodesBySelector(componentNativeEl, options.footerSelector) : []
 			],
 			componentRef.hostView,
 			componentRef
@@ -433,10 +346,7 @@ export class HubPortalStack {
 		if (parent && element !== this._document.body) {
 			Array.from(parent.children).forEach((sibling) => {
 				if (sibling !== element && sibling.nodeName !== 'SCRIPT') {
-					this._ariaHiddenValues.set(
-						sibling,
-						sibling.getAttribute('aria-hidden')
-					);
+					this._ariaHiddenValues.set(sibling, sibling.getAttribute('aria-hidden'));
 					sibling.setAttribute('aria-hidden', 'true');
 				}
 			});
@@ -494,14 +404,9 @@ export class HubPortalStack {
 	 * may include properties such as `dismissSelector`, which is used to specify a CSS selector for elements that, when clicked, will
 	 * dismiss the portal by calling the `dismiss` method on the `context` object.
 	 */
-	private _addDismissEventListener(
-		container: HTMLElement,
-		context: HubActivePortal,
-		options: HubPortalOptions
-	) {
+	private _addDismissEventListener(container: HTMLElement, context: HubActivePortal, options: HubPortalOptions) {
 		if (options.dismissSelector) {
-			const dismissaable: NodeListOf<Element> =
-				container.querySelectorAll(options.dismissSelector);
+			const dismissaable: NodeListOf<Element> = container.querySelectorAll(options.dismissSelector);
 			for (const item of Array.from(dismissaable)) {
 				item.addEventListener('click', () => context.dismiss());
 			}
@@ -520,14 +425,9 @@ export class HubPortalStack {
 	 * may include properties such as `closeSelector`, which is used to specify the selector for elements that can trigger the portal
 	 * to close when clicked.
 	 */
-	private _addCloseEventListener(
-		container: HTMLElement,
-		context: HubActivePortal,
-		options: HubPortalOptions
-	) {
+	private _addCloseEventListener(container: HTMLElement, context: HubActivePortal, options: HubPortalOptions) {
 		if (options.closeSelector) {
-			const dismissaable: NodeListOf<Element> =
-				container.querySelectorAll(options.closeSelector);
+			const dismissaable: NodeListOf<Element> = container.querySelectorAll(options.closeSelector);
 			for (const item of Array.from(dismissaable)) {
 				item.addEventListener('click', () => context.close());
 			}
@@ -546,10 +446,7 @@ export class HubPortalStack {
  * @returns An array of nodes that were extracted from the container element based on the provided selector, and then removes those
  * nodes from the DOM.
  */
-function extractAndRemoveNodesBySelector(
-	container: HTMLElement,
-	selector: string
-): Array<Node> {
+function extractAndRemoveNodesBySelector(container: HTMLElement, selector: string): Array<Node> {
 	let containerNodes = container.querySelectorAll(selector);
 
 	const nodes = Array.from(containerNodes).reduce((acc, c) => {

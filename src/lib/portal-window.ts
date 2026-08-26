@@ -1,77 +1,67 @@
 import { DOCUMENT } from '@angular/common';
 import {
-  Component,
-  ElementRef,
-  inject,
-  NgZone,
-  OnDestroy,
-  OnInit,
-  ViewEncapsulation,
-  input,
-  output,
-  viewChild
+	Component,
+	ElementRef,
+	inject,
+	NgZone,
+	OnDestroy,
+	OnInit,
+	ViewEncapsulation,
+	input,
+	output,
+	viewChild
 } from '@angular/core';
-import {
-    getFocusableBoundaryElements,
-    hubRunTransition,
-    reflow,
-    TransitionOptions
-} from 'ng-hub-ui-utils';
+import { getFocusableBoundaryElements, hubRunTransition, reflow, TransitionOptions } from 'ng-hub-ui-utils';
 import { Observable, Subject, zip } from 'rxjs';
 import { take } from 'rxjs/operators';
 
 @Component({
-    selector: 'hub-portal-window',
-    imports: [],
-    host: {
-        '[class]': '"portal d-block" + (windowClass() ? " " + windowClass() : "")',
-        '[class.fade]': 'animation()',
-        role: 'dialog',
-        tabindex: '-1',
-        '[attr.aria-labelledby]': 'ariaLabelledBy()',
-        '[attr.aria-describedby]': 'ariaDescribedBy()'
-    },
-    template: `
+	selector: 'hub-portal-window',
+	imports: [],
+	host: {
+		'[class]': '"portal d-block" + (windowClass() ? " " + windowClass() : "")',
+		'[class.fade]': 'animation()',
+		role: 'dialog',
+		tabindex: '-1',
+		'[attr.aria-labelledby]': 'ariaLabelledBy()',
+		'[attr.aria-describedby]': 'ariaDescribedBy()'
+	},
+	template: `
 		<div
-		  #dialog
+			#dialog
 			[class]="
 				'portal-dialog' +
 				(scrollable() ? ' portal-dialog-scrollable' : '') +
 				(portalDialogClass() ? ' ' + portalDialogClass() : '')
 			"
-		  role="document"
-		  >
-		  <div
-				[class]="
-					'portal-content' +
-					(portalContentClass() ? ' ' + portalContentClass() : '')
-				"
-		    >
-		    @if (singleContent) {
-		      <ng-content></ng-content>
-		    } @else {
-		      <div class="portal-header">
-		        <ng-content />
-		        <button
-		          type="button"
-		          class="btn-close"
-		          data-bs-dismiss="portal"
-		          aria-label="Close"
-		          (click)="dismiss(null)"
-		        ></button>
-		      </div>
-		      <div class="portal-body">
-		        <ng-content />
-		      </div>
-		      <div class="portal-footer">
-		        <ng-content />
-		      </div>
-		    }
-		  </div>
+			role="document"
+		>
+			<div [class]="'portal-content' + (portalContentClass() ? ' ' + portalContentClass() : '')">
+				@if (singleContent) {
+					<ng-content></ng-content>
+				} @else {
+					<div class="portal-header">
+						<ng-content />
+						<button
+							type="button"
+							class="btn-close"
+							data-bs-dismiss="portal"
+							aria-label="Close"
+							(click)="dismiss(null)"
+						></button>
+					</div>
+					<div class="portal-body">
+						<ng-content />
+					</div>
+					<div class="portal-footer">
+						<ng-content />
+					</div>
+				}
+			</div>
 		</div>
-		`,
-    encapsulation: ViewEncapsulation.None,
-    styleUrl: './portal.scss'
+	`,
+	encapsulation: ViewEncapsulation.None,
+	styleUrl: './portal.scss'
 })
 export class HubPortalWindow implements OnInit, OnDestroy {
 	private _document = inject(DOCUMENT);
@@ -81,15 +71,15 @@ export class HubPortalWindow implements OnInit, OnDestroy {
 	private _closed$ = new Subject<void>();
 	private _elWithFocus: Element | null = null; // element that is focused prior to portal opening
 
-    private readonly _dialogEl = viewChild.required<ElementRef<HTMLElement>>('dialog');
+	private readonly _dialogEl = viewChild.required<ElementRef<HTMLElement>>('dialog');
 
-    readonly animation = input<boolean>(true);
-    readonly ariaLabelledBy = input<string>();
-    readonly ariaDescribedBy = input<string>();
-    readonly scrollable = input<string>();
-    readonly windowClass = input<string>();
-    readonly portalDialogClass = input<string>();
-    readonly portalContentClass = input<string>();
+	readonly animation = input<boolean>(true);
+	readonly ariaLabelledBy = input<string>();
+	readonly ariaDescribedBy = input<string>();
+	readonly scrollable = input<string>();
+	readonly windowClass = input<string>();
+	readonly portalDialogClass = input<string>();
+	readonly portalContentClass = input<string>();
 
 	singleContent!: boolean;
 
@@ -98,9 +88,9 @@ export class HubPortalWindow implements OnInit, OnDestroy {
 	shown = new Subject<void>();
 	hidden = new Subject<void>();
 
-    dismiss(reason: any): void {
-        this.dismissEvent.emit(reason);
-    }
+	dismiss(reason: any): void {
+		this.dismissEvent.emit(reason);
+	}
 
 	ngOnInit() {
 		this._elWithFocus = this._document.activeElement;
@@ -129,12 +119,7 @@ export class HubPortalWindow implements OnInit, OnDestroy {
 			() => nativeElement.classList.remove('show'),
 			context
 		);
-		const dialogTransition$ = hubRunTransition(
-			this._zone,
-			this._dialogEl().nativeElement,
-			() => {},
-			context
-		);
+		const dialogTransition$ = hubRunTransition(this._zone, this._dialogEl().nativeElement, () => {}, context);
 
 		const transitions$ = zip(windowTransition$, dialogTransition$);
 		transitions$.subscribe(() => {
@@ -165,12 +150,7 @@ export class HubPortalWindow implements OnInit, OnDestroy {
 			},
 			context
 		);
-		const dialogTransition$ = hubRunTransition(
-			this._zone,
-			this._dialogEl().nativeElement,
-			() => {},
-			context
-		);
+		const dialogTransition$ = hubRunTransition(this._zone, this._dialogEl().nativeElement, () => {}, context);
 
 		zip(windowTransition$, dialogTransition$).subscribe(() => {
 			this.shown.next();
@@ -187,31 +167,27 @@ export class HubPortalWindow implements OnInit, OnDestroy {
 	private _setFocus() {
 		const { nativeElement } = this._elRef;
 		if (!nativeElement.contains(document.activeElement)) {
-			const autoFocusable = nativeElement.querySelector(
-				`[hubAutofocus]`
-			) as HTMLElement;
-			const firstFocusable =
-				getFocusableBoundaryElements(nativeElement)[0];
+			const autoFocusable = nativeElement.querySelector(`[hubAutofocus]`) as HTMLElement;
+			const firstFocusable = getFocusableBoundaryElements(nativeElement)[0];
 
-			const elementToFocus =
-				autoFocusable || firstFocusable || nativeElement;
+			const elementToFocus = autoFocusable || firstFocusable || nativeElement;
 			elementToFocus.focus();
 		}
 	}
 
-    private _restoreFocus() {
-        const body = this._document.body;
-        const elWithFocus = this._elWithFocus;
+	private _restoreFocus() {
+		const body = this._document.body;
+		const elWithFocus = this._elWithFocus;
 
-        let elementToFocus: HTMLElement;
-        if (elWithFocus instanceof HTMLElement && body.contains(elWithFocus)) {
-            elementToFocus = elWithFocus;
-        } else {
-            elementToFocus = body as unknown as HTMLElement;
-        }
-        this._zone.runOutsideAngular(() => {
-            setTimeout(() => elementToFocus.focus());
-            this._elWithFocus = null;
-        });
-    }
+		let elementToFocus: HTMLElement;
+		if (elWithFocus instanceof HTMLElement && body.contains(elWithFocus)) {
+			elementToFocus = elWithFocus;
+		} else {
+			elementToFocus = body as unknown as HTMLElement;
+		}
+		this._zone.runOutsideAngular(() => {
+			setTimeout(() => elementToFocus.focus());
+			this._elWithFocus = null;
+		});
+	}
 }

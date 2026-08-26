@@ -177,15 +177,15 @@ export class HubPortalRef {
 				this._dismiss(reason);
 			} else {
 				const dismiss = this._beforeDismiss();
-            if (isPromise(dismiss as any)) {
-                (dismiss as Promise<boolean>).then(
-                    (result) => {
-                        if (result !== false) {
-                            this._dismiss(reason);
-                        }
-                    },
-                    () => {}
-                );
+				if (isPromise(dismiss as any)) {
+					(dismiss as Promise<boolean>).then(
+						(result) => {
+							if (result !== false) {
+								this._dismiss(reason);
+							}
+						},
+						() => {}
+					);
 				} else if (dismiss !== false) {
 					this._dismiss(reason);
 				}
