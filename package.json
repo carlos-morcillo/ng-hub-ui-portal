@@ -1,6 +1,6 @@
 {
 	"name": "ng-hub-ui-portal",
-	"version": "22.0.4",
+	"version": "22.0.5",
 	"description": "A flexible Angular portal library for dynamic content rendering with advanced positioning and interaction control",
 	"keywords": [
 		"angular",
@@ -27,7 +27,7 @@
 	"bugs": {
 		"url": "https://github.com/carlos-morcillo/ng-hub-ui-portal/issues"
 	},
-	"homepage": "https://hubui.dev/",
+	"homepage": "https://hubui.dev/en/portal/overview/",
 	"license": "MIT",
 	"peerDependencies": {
 		"@angular/common": ">=18.0.0",
