@@ -1,4 +1,6 @@
+import { InputSignal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import type { HubPortalOptions } from './portal-config';
 import { HubPortalWindow } from './portal-window';
 
 describe('hub-portal-dialog', () => {
@@ -41,6 +43,21 @@ describe('hub-portal-dialog', () => {
 			const dialogEl: Element = fixture.nativeElement.querySelector('.portal-dialog');
 			expect(dialogEl.classList.contains('portal-dialog')).toBe(true);
 			expect(dialogEl.classList.contains('custom-dialog-class')).toBe(true);
+		});
+
+		it('should type and apply `scrollable` exactly as `HubPortalOptions` declares it', () => {
+			// `HubPortalRef` pushes the option into this input through the name-based
+			// `setInput`, so the compiler never sees the two drift apart. This assignment
+			// is the only place that can: it fails to build if the input stops carrying
+			// the option's own type.
+			const scrollable: InputSignal<HubPortalOptions['scrollable']> = fixture.componentInstance.scrollable;
+
+			fixture.componentRef.setInput('scrollable', true);
+			fixture.detectChanges();
+
+			const dialogEl: Element = fixture.nativeElement.querySelector('.portal-dialog');
+			expect(scrollable()).toBe(true);
+			expect(dialogEl.classList.contains('portal-dialog-scrollable')).toBe(true);
 		});
 
 		it('should render portal content with a specified class', () => {

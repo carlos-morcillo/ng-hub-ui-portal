@@ -1,5 +1,6 @@
 import { DOCUMENT } from '@angular/common';
 import {
+	ChangeDetectionStrategy,
 	Component,
 	ElementRef,
 	inject,
@@ -12,12 +13,14 @@ import {
 	viewChild
 } from '@angular/core';
 import { getFocusableBoundaryElements, hubRunTransition, reflow, TransitionOptions } from 'ng-hub-ui-utils';
-import { Observable, Subject, zip } from 'rxjs';
-import { take } from 'rxjs/operators';
+import { fromEvent, Observable, Subject, zip } from 'rxjs';
+import { filter, take, takeUntil } from 'rxjs/operators';
+import { PortalDismissReasons } from './portal-dismiss-reasons';
 
 @Component({
 	selector: 'hub-portal-window',
 	imports: [],
+	changeDetection: ChangeDetectionStrategy.OnPush,
 	host: {
 		'[class]': '"portal d-block" + (windowClass() ? " " + windowClass() : "")',
 		'[class.fade]': 'animation()',
@@ -76,7 +79,8 @@ export class HubPortalWindow implements OnInit, OnDestroy {
 	readonly animation = input<boolean>(true);
 	readonly ariaLabelledBy = input<string>();
 	readonly ariaDescribedBy = input<string>();
-	readonly scrollable = input<string>();
+	readonly keyboard = input<boolean>(true);
+	readonly scrollable = input<boolean>();
 	readonly windowClass = input<string>();
 	readonly portalDialogClass = input<string>();
 	readonly portalContentClass = input<string>();
@@ -94,6 +98,7 @@ export class HubPortalWindow implements OnInit, OnDestroy {
 
 	ngOnInit() {
 		this._elWithFocus = this._document.activeElement;
+		this._enableEventHandling();
 		this._zone.onStable
 			.asObservable()
 			.pipe(take(1))
@@ -158,6 +163,27 @@ export class HubPortalWindow implements OnInit, OnDestroy {
 		});
 
 		this._setFocus();
+	}
+
+	/**
+	 * Arms the `Escape` dismissal the `keyboard` option promises.
+	 *
+	 * It is armed from `ngOnInit` rather than from `_show()` so that a dialog whose entry
+	 * transition never runs is still dismissable: a focus-trapped `role="dialog"` with no way
+	 * out is the worse of the two failures. The listener sits on this window's own element, so
+	 * in a stack only the window holding focus — the top-most one, which is where the focus trap
+	 * keeps it — reacts to the key.
+	 */
+	private _enableEventHandling() {
+		const { nativeElement } = this._elRef;
+		this._zone.runOutsideAngular(() => {
+			fromEvent<KeyboardEvent>(nativeElement, 'keydown')
+				.pipe(
+					takeUntil(this._closed$),
+					filter((event) => event.key === 'Escape' && !event.defaultPrevented && this.keyboard())
+				)
+				.subscribe(() => this._zone.run(() => this.dismiss(PortalDismissReasons.ESC)));
+		});
 	}
 
 	private _disableEventHandling() {

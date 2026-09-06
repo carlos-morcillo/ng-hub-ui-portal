@@ -2,7 +2,7 @@
 
 [Español](./README.es.md) | **English**
 
-A lightweight and flexible Angular portal library for dynamically rendering components and templates in any DOM container. Part of the ng-hub-ui suite of Angular components, this library provides a streamlined way to manage dynamic content rendering with full control over positioning and interaction.
+A lightweight and flexible Angular portal library for dynamically rendering components and templates in any DOM container. Part of the ng-hub-ui suite of Angular components, this library is headless and structural: it manages rendering, focus, the portal stack and the lifecycle, and leaves the geometry and the visual presentation to your own components and CSS.
 
 ## Documentation and Live Examples
 
@@ -141,7 +141,7 @@ The library is **headless and structural** by design: it manages rendering, focu
 npm install ng-hub-ui-portal ng-hub-ui-utils
 ```
 
-> **Peer dependency:** `ng-hub-ui-portal` relies on [`ng-hub-ui-utils`](https://www.npmjs.com/package/ng-hub-ui-utils) (`^1.0.0`) for shared overlay/content helpers, alongside `@angular/common` and `@angular/core` (`>=16.0.0`). Make sure it is installed in your application.
+> **Peer dependency:** `ng-hub-ui-portal` relies on [`ng-hub-ui-utils`](https://www.npmjs.com/package/ng-hub-ui-utils) (`>=22.0.0`) for shared overlay/content helpers, alongside `@angular/common` and `@angular/core` (`>=18.0.0`). Make sure it is installed in your application.
 
 ## ⚙️ Basic Usage
 
@@ -377,25 +377,41 @@ The same pattern works with the `toggle` method:
 
 ```typescript
 const portalRef = this.portal.toggle(UserDetailsComponent);
-portalRef.componentInstance.userName = 'John Doe';
-portalRef.componentInstance.userRole = 'User';
+portalRef.componentInstance!.userName = 'John Doe';
+portalRef.componentInstance!.userRole = 'User';
 ```
 
 ### Type Safety with Component Instance
 
-For better TypeScript support, you can type your portal reference:
+`open()` and `toggle()` infer the content component from the class you hand them, so the
+reference is already typed — there is nothing to annotate:
 
 ```typescript
-private portalRef: HubPortalRef & { componentInstance: UserDetailsComponent };
+private portalRef!: HubPortalRef<UserDetailsComponent>;
 
 openUserPortal() {
+	// `HubPortalRef<UserDetailsComponent>`, inferred from the class
 	this.portalRef = this.portal.open(UserDetailsComponent);
 
-	// Now TypeScript knows all the available properties and methods
-	this.portalRef.componentInstance.userName = 'John Doe';
-	this.portalRef.componentInstance.updateUser('Admin');
+	// TypeScript knows all the available properties and methods
+	this.portalRef.componentInstance!.userName = 'John Doe';
+	this.portalRef.componentInstance!.updateUser('Admin');
 }
 ```
+
+A second parameter types the value the portal closes with, which travels through `close()`,
+`result` and `closed`:
+
+```typescript
+const portalRef = this.portal.open<UserDetailsComponent, 'saved' | 'discarded'>(UserDetailsComponent);
+
+portalRef.result.then((outcome) => {
+	// `outcome` is 'saved' | 'discarded'
+});
+```
+
+Both parameters default to `any`, so a reference written as plain `HubPortalRef` keeps behaving
+exactly as it did.
 
 ## ⚙️ Configuration Options
 
@@ -505,8 +521,8 @@ this.portal.activeInstances.subscribe((portals) => {
 
 | Member            | Signature                                              | Description                                                                    |
 | ----------------- | ------------------------------------------------------ | ------------------------------------------------------------------------------ |
-| `open`            | `(content: any, options?: HubPortalOptions) => HubPortalRef` | Opens a portal with the given content (component type or `TemplateRef`).        |
-| `toggle`          | `(content: any, options?: HubPortalOptions) => HubPortalRef` | Opens a portal with exclusive-rendering behavior.                               |
+| `open`            | `<C, R>(content: Type<C> \| TemplateRef<any> \| string, options?: HubPortalOptions) => HubPortalRef<C, R>` | Opens a portal with the given content (component type, `TemplateRef` or string). |
+| `toggle`          | `<C, R>(content: Type<C> \| TemplateRef<any> \| string, options?: HubPortalOptions) => HubPortalRef<C, R>` | Opens a portal with exclusive-rendering behavior.                               |
 | `activeInstances` | `Observable<HubPortalRef[]>`                           | Observable holding the currently active portal references.                      |
 | `dismissAll`      | `(reason?: any) => void`                               | Dismisses all currently displayed portals with the supplied reason.             |
 | `hasOpenPortals`  | `() => boolean`                                        | Indicates whether there are currently any open portals.                         |
@@ -521,19 +537,20 @@ Injectable inside the content component to control its own portal.
 | `close`   | `(result?: any) => void`                        | Closes the portal, resolving `HubPortalRef.result`.    |
 | `dismiss` | `(reason?: any) => void`                        | Dismisses the portal, rejecting `HubPortalRef.result`. |
 
-### `HubPortalRef`
+### `HubPortalRef<C = any, R = any>`
 
-Returned by `open()` / `toggle()`.
+Returned by `open()` / `toggle()`. `C` is the content component type, inferred from the class
+passed in; `R` is the type of the value the portal closes with.
 
 | Member              | Type                                            | Description                                                                |
 | ------------------- | ----------------------------------------------- | -------------------------------------------------------------------------- |
-| `result`            | `Promise<any>`                                  | Resolves when the portal is closed, rejects when it is dismissed.          |
-| `componentInstance` | `any`                                           | The instance of the content component (`undefined` for templates/closed).  |
-| `closed`            | `Observable<any>`                               | Emits when the portal is closed via `.close()`.                            |
+| `result`            | `Promise<R>`                                    | Resolves when the portal is closed, rejects when it is dismissed.          |
+| `componentInstance` | `C \| void`                                     | The instance of the content component (`undefined` for templates/closed).  |
+| `closed`            | `Observable<R>`                                 | Emits when the portal is closed via `.close()`.                            |
 | `dismissed`         | `Observable<any>`                               | Emits when the portal is dismissed via `.dismiss()`.                       |
 | `shown`             | `Observable<void>`                              | Emits when the portal is fully visible and the open animation has ended.   |
 | `hidden`            | `Observable<void>`                              | Emits when the portal is closed and the close animation has ended.         |
-| `close`             | `(result?: any) => void`                        | Closes the portal with an optional result.                                 |
+| `close`             | `(result?: R) => void`                          | Closes the portal with an optional result.                                 |
 | `dismiss`           | `(reason?: any) => void`                        | Dismisses the portal with an optional reason.                              |
 | `update`            | `(options: HubPortalUpdatableOptions) => void`  | Updates options of the opened portal.                                      |
 
@@ -546,8 +563,8 @@ Returned by `open()` / `toggle()`.
 
 - **`HubPortalConfig`** — injectable service providing application-wide default options (see [Global Configuration](#-global-configuration)).
 - **`HubPortalStack`** — low-level service that manages the portal stack (used internally by `HubPortal`).
-- **`PortalDismissReasons`** — enum of built-in dismissal reasons: `BACKDROP_CLICK`, `ESC`.
-- **`HubPortalModule`** — `NgModule` that registers the `HubPortal` provider (optional in standalone apps, since `HubPortal` is `providedIn: 'root'`).
+- **`PortalDismissReasons`** — enum of built-in dismissal reasons. The library emits `ESC` when the `Escape` key dismisses a window; `BACKDROP_CLICK` is declared for consumers that draw their own backdrop, since this library draws none.
+- **`HubPortalModule`** — **deprecated, removed in 23.0.0.** An `NgModule` whose whole body is `providers: [HubPortal]`. Since `HubPortal` is `providedIn: 'root'`, importing it never enabled anything — it only added a second instance in that injector. Inject `HubPortal` and drop the import.
 
 ## 🧩 Styling
 

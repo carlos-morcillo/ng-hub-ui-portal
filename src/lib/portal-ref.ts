@@ -37,21 +37,25 @@ const WINDOW_ATTRIBUTES: string[] = [
 	'animation',
 	'ariaLabelledBy',
 	'ariaDescribedBy',
+	'keyboard',
 	'scrollable',
 	'windowClass',
 	'portalDialogClass',
 	'portalContentClass'
 ];
-const BACKDROP_ATTRIBUTES: string[] = ['animation', 'backdropClass'];
 
 /**
  * A reference to the newly opened portal returned by the `HubPortal.open()` method.
+ *
+ * `C` is the type of the component used as content, so `componentInstance` needs no cast,
+ * and `R` is the type of the value the portal closes with. Both default to `any`, which is
+ * what the reference used to be everywhere, so existing code keeps compiling untouched.
  */
-export class HubPortalRef {
-	private _closed = new Subject<any>();
+export class HubPortalRef<C = any, R = any> {
+	private _closed = new Subject<R>();
 	private _dismissed = new Subject<any>();
 	private _hidden = new Subject<void>();
-	private _resolve!: (result?: any) => void;
+	private _resolve!: (result: R | PromiseLike<R>) => void;
 	private _reject!: (reason?: any) => void;
 
 	private _applyWindowOptions(options: HubPortalOptions): void {
@@ -81,7 +85,7 @@ export class HubPortalRef {
 	 *
 	 * When a `TemplateRef` is used as the content or when the portal is closed, will return `undefined`.
 	 */
-	get componentInstance(): any {
+	get componentInstance(): C | void {
 		if (this._contentRef && this._contentRef.componentRef) {
 			return this._contentRef.componentRef.instance;
 		}
@@ -90,14 +94,14 @@ export class HubPortalRef {
 	/**
 	 * The promise that is resolved when the portal is closed and rejected when the portal is dismissed.
 	 */
-	result: Promise<any>;
+	result: Promise<R>;
 
 	/**
 	 * The observable that emits when the portal is closed via the `.close()` method.
 	 *
 	 * It will emit the result passed to the `.close()` method.
 	 */
-	get closed(): Observable<any> {
+	get closed(): Observable<R> {
 		return this._closed.asObservable().pipe(takeUntil(this._hidden));
 	}
 
@@ -152,10 +156,12 @@ export class HubPortalRef {
 	 *
 	 * The `HubMobalRef.result` promise will be resolved with the provided value.
 	 */
-	close(result?: any): void {
+	close(result?: R): void {
 		if (this._windowCmptRef) {
-			this._closed.next(result);
-			this._resolve(result);
+			// Closing without a value legitimately pushes `undefined` through the `R`-typed
+			// stream, mirroring the optional parameter.
+			this._closed.next(result as R);
+			this._resolve(result as R);
 			this._removePortalElements();
 		}
 	}

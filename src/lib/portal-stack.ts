@@ -453,10 +453,7 @@ function extractAndRemoveNodesBySelector(container: HTMLElement, selector: strin
 		return [...acc, ...Array.from(c.childNodes)];
 	}, [] as Array<Node>);
 
-	// Selecciona los nodos dentro del contenedor que coincidan con el selector
 	const nodesToRemove = container.querySelectorAll<HTMLElement>(selector);
-
-	// Convertir NodeList a array y eliminar cada nodo del DOM
 	Array.from(nodesToRemove).forEach((node) => node.remove());
 	return nodes;
 }

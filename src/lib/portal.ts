@@ -1,4 +1,4 @@
-import { inject, Injectable, Injector } from '@angular/core';
+import { inject, Injectable, Injector, TemplateRef, Type } from '@angular/core';
 
 import { HubPortalConfig, HubPortalOptions } from './portal-config';
 import { HubPortalRef } from './portal-ref';
@@ -24,14 +24,18 @@ export class HubPortal {
 	 * use `HubActivePortal` methods to close / dismiss portals from "inside" of your component.
 	 *
 	 * Also see the [`HubPortalOptions`](#/components/portal/api#HubPortalOptions) for the list of supported options.
+	 *
+	 * Generics: `C` is the content component type, inferred from the class you pass, so
+	 * `componentInstance` is typed without a cast; `R` is the type of the value flowing through
+	 * `close()`, `result` and `closed`. Both default to `any`.
 	 */
-	open(content: any, options: HubPortalOptions = {}): HubPortalRef {
+	open<C = any, R = any>(content: Type<C> | TemplateRef<any> | string, options: HubPortalOptions = {}): HubPortalRef<C, R> {
 		const combinedOptions = {
 			...this._config,
 			animation: this._config.animation,
 			...options
 		};
-		return this._portalStack.open(this._injector, content, combinedOptions);
+		return this._portalStack.open(this._injector, content, combinedOptions) as HubPortalRef<C, R>;
 	}
 
 	/**
@@ -45,15 +49,13 @@ export class HubPortal {
 	 *
 	 * @returns The `toggle` function is returning a `HubPortalRef` object.
 	 */
-	toggle(content: any, options: HubPortalOptions = {}): HubPortalRef {
+	toggle<C = any, R = any>(content: Type<C> | TemplateRef<any> | string, options: HubPortalOptions = {}): HubPortalRef<C, R> {
 		const combinedOptions = {
 			...this._config,
 			animation: this._config.animation,
 			...options
 		};
-		// this.dismissAll();
-		// return this._portalStack.open(this._injector, content, combinedOptions);
-		return this._portalStack.toggle(this._injector, content, combinedOptions);
+		return this._portalStack.toggle(this._injector, content, combinedOptions) as HubPortalRef<C, R>;
 	}
 
 	/**

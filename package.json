@@ -1,6 +1,6 @@
 {
 	"name": "ng-hub-ui-portal",
-	"version": "22.0.5",
+	"version": "22.1.0",
 	"description": "A flexible Angular portal library for dynamic content rendering with advanced positioning and interaction control",
 	"keywords": [
 		"angular",
@@ -13,7 +13,6 @@
 		"component-rendering",
 		"ui-component",
 		"angular-portal",
-		"angular16",
 		"typescript",
 		"hub-ui",
 		"accessibility",

@@ -1,5 +1,4 @@
 import { Injectable, Injector } from '@angular/core';
-// import { HubConfig } from '../hub-config';
 
 /**
  * Options available when opening new portal windows with `HubPortal.open()` method.
