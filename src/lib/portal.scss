@@ -1,7 +1,31 @@
 hub-portal-window {
-	.component-host-scrollable {
-		display: flex;
-		flex-direction: column;
-		overflow: hidden;
+	/*
+	 * `scrollable` used to be delivered by a `component-host-scrollable` class written on the
+	 * content component's host element. That element is only a query root — its children are
+	 * handed to the window and the host itself never enters the document — so the rule matched
+	 * nothing. The window owns the dialog, and the dialog is what carries the option.
+	 *
+	 * Which box scrolls depends on the shape of the content, and both shapes are in use: the
+	 * window draws a `.portal-body` of its own whenever `headerSelector` or `footerSelector` is
+	 * set, and a single-content portal is expected to bring its own — that is the markup the
+	 * README teaches. Where there is one, the content box is pinned and the body scrolls inside
+	 * it; where there is none, the content box is what scrolls, so nothing is ever clipped away.
+	 */
+	.portal-dialog-scrollable {
+		.portal-content {
+			display: flex;
+			flex-direction: column;
+			min-height: 0;
+			overflow-y: auto;
+		}
+
+		.portal-content:has(.portal-body) {
+			overflow: hidden;
+		}
+
+		.portal-body {
+			min-height: 0;
+			overflow-y: auto;
+		}
 	}
 }

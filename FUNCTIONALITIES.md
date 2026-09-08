@@ -17,6 +17,7 @@ This table details the functionalities of the `ng-hub-ui-portal` library and ind
 |                         | Custom Container (CSS Selector)                                |       ✅        |
 |                         | Custom Container (`HTMLElement`)                               |       ✅        |
 | **Overlay Management**  | Scroll Blocking                                                |       [x]       |
+|                         | Scrollable Body (`scrollable`)                                 |       [x]       |
 |                         | Auto-Focus Management                                          |       [x]       |
 |                         | `aria-hidden` on Everything Outside the Window                 |       [x]       |
 | **Interaction**         | Close with Result (`close()`)                                  |       ✅        |

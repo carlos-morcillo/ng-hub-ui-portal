@@ -19,6 +19,22 @@ import { HubPortalOptions, HubPortalUpdatableOptions } from './portal-config';
 import { HubActivePortal, HubPortalRef } from './portal-ref';
 import { HubPortalWindow } from './portal-window';
 
+/**
+ * Class written on `<body>` while at least one portal is open.
+ *
+ * It replaces the unprefixed `portal-open`, which claimed a name in the application's
+ * namespace rather than in the library's — the same defect `ng-hub-ui-utils` retired from the
+ * bare `[tooltip]` attribute in 22.14.0. Nothing warns a host whose own `.portal-open` rule is
+ * silently joined by ours.
+ */
+const BODY_OPEN_CLASS = 'hub-portal-open';
+
+/**
+ * @deprecated Since 22.2.0, removed in 23.0.0. Written beside {@link BODY_OPEN_CLASS} so a
+ * stylesheet still matching the old name keeps working; match `hub-portal-open` instead.
+ */
+const LEGACY_BODY_OPEN_CLASS = 'portal-open';
+
 @Injectable({ providedIn: 'root' })
 export class HubPortalStack {
 	private _applicationRef = inject(ApplicationRef);
@@ -95,7 +111,7 @@ export class HubPortalStack {
 		hubPortalRef.hidden.pipe(take(1)).subscribe(() =>
 			Promise.resolve(true).then(() => {
 				if (!this._portalRefs.length) {
-					this._document.body.classList.remove('portal-open');
+					this._document.body.classList.remove(BODY_OPEN_CLASS, LEGACY_BODY_OPEN_CLASS);
 					this._restoreScrollBar();
 					this._revertAriaHidden();
 				}
@@ -115,7 +131,7 @@ export class HubPortalStack {
 
 		hubPortalRef.update(options);
 		if (this._portalRefs.length === 1) {
-			this._document.body.classList.add('portal-open');
+			this._document.body.classList.add(BODY_OPEN_CLASS, LEGACY_BODY_OPEN_CLASS);
 		}
 
 		windowCmptRef.changeDetectorRef.detectChanges();
@@ -189,7 +205,7 @@ export class HubPortalStack {
 			this._registerWindowCmpt(windowCmptRef);
 
 			if (this._portalRefs.length === 1) {
-				this._document.body.classList.add('portal-open');
+				this._document.body.classList.add(BODY_OPEN_CLASS, LEGACY_BODY_OPEN_CLASS);
 			}
 
 			newPortalRef.update(options);
@@ -200,7 +216,7 @@ export class HubPortalStack {
 		newPortalRef.hidden.pipe(take(1)).subscribe(() =>
 			Promise.resolve(true).then(() => {
 				if (!this._portalRefs.length) {
-					this._document.body.classList.remove('portal-open');
+					this._document.body.classList.remove(BODY_OPEN_CLASS, LEGACY_BODY_OPEN_CLASS);
 					this._restoreScrollBar();
 					this._revertAriaHidden();
 				}
@@ -288,19 +304,16 @@ export class HubPortalStack {
 		this._addDismissEventListener(containerNode, context as any, options);
 		this._addCloseEventListener(containerNode, context as any, options);
 
-		return new ContentRef(
-			[
-				options.headerSelector ? extractAndRemoveNodesBySelector(containerNode, options.headerSelector) : [],
-				containerNode.childNodes as any,
-				options.footerSelector ? extractAndRemoveNodesBySelector(containerNode, options.footerSelector) : []
-			],
-			viewRef
-		);
+		return new ContentRef(splitIntoSlots(containerNode, options), viewRef);
 	}
 
 	private _createFromString(content: string): ContentRef {
 		const component = this._document.createTextNode(`${content}`);
-		return new ContentRef([[component]]);
+		// Three slots, always: `_createWindowComponent` destructures `[header, body, footer]`, and
+		// `splitIntoSlots` — the path every other kind of content takes — returns three. Returning
+		// one put the text in the HEADER slot and left the body `undefined`, which Angular projects
+		// as nothing: a string portal opened with an empty dialog.
+		return new ContentRef([[], [component], []]);
 	}
 
 	private _createFromComponent(
@@ -320,25 +333,15 @@ export class HubPortalStack {
 		});
 
 		const componentNativeEl: HTMLElement = componentRef.location.nativeElement;
-		if (options.scrollable) {
-			componentNativeEl.classList.add('component-host-scrollable');
-		}
 		this._applicationRef.attachView(componentRef.hostView);
 
 		this._addDismissEventListener(componentNativeEl, context, options);
 		this._addCloseEventListener(componentNativeEl, context as any, options);
 
-		// FIXME: we should here get rid of the component nativeElement
-		// and use `[Array.from(componentNativeEl.childNodes)]` instead and remove the above CSS class.
-		return new ContentRef(
-			[
-				options.headerSelector ? extractAndRemoveNodesBySelector(componentNativeEl, options.headerSelector) : [],
-				componentNativeEl.childNodes as any,
-				options.footerSelector ? extractAndRemoveNodesBySelector(componentNativeEl, options.footerSelector) : []
-			],
-			componentRef.hostView,
-			componentRef
-		);
+		// The component host is only a query root: `splitIntoSlots` hands its children to the
+		// window and the host itself never enters the document, so anything set on it is lost.
+		// `scrollable` is delivered by the dialog instead, in `HubPortalWindow`.
+		return new ContentRef(splitIntoSlots(componentNativeEl, options), componentRef.hostView, componentRef);
 	}
 
 	private _setAriaHidden(element: Element) {
@@ -436,24 +439,45 @@ export class HubPortalStack {
 }
 
 /**
- * Extracts child nodes matching a selector from a container element, removes those nodes from the DOM, and returns them as an array.
+ * Split a container into the portal's three slots, taking nothing out of the document twice.
  *
- * @param {HTMLElement} container - The `container` parameter in the `extractAndRemoveNodesBySelector` function is an HTMLElement
- * that represents the parent element within which we want to search for nodes matching a specific selector and remove them.
- * @param {string} selector - The `selector` parameter in the `extractAndRemoveNodesBySelector` function is a string that
- * represents a CSS selector. This selector is used to query and select specific elements within the `container` HTMLElement.
+ * Order is load-bearing and used not to be. The old code read the body **between** the header
+ * and the footer extractions, so the footer's marker element was still a child at that point;
+ * it got away with it only because what it captured was the live `childNodes` list, which
+ * Angular snapshots later, once both markers are already gone. That is correctness by
+ * accident: the value also disagreed with the `Node[][]` `ContentRef` declares, and it goes
+ * empty the moment the nodes are projected out of the container.
  *
- * @returns An array of nodes that were extracted from the container element based on the provided selector, and then removes those
- * nodes from the DOM.
+ * Every declared slot is taken out first; what nobody claimed is the body's, captured as a
+ * static array, so nothing a consumer wrote can go missing.
+ */
+function splitIntoSlots(container: HTMLElement, options: { headerSelector?: string; footerSelector?: string }): Node[][] {
+	const header = options.headerSelector ? extractAndRemoveNodesBySelector(container, options.headerSelector) : [];
+	const footer = options.footerSelector ? extractAndRemoveNodesBySelector(container, options.footerSelector) : [];
+
+	// Whatever is left belongs to the body.
+	const body = Array.from(container.childNodes);
+
+	return [header, body, footer];
+}
+
+/**
+ * Extracts the children of every element matching `selector` inside `container` and takes those
+ * matched elements out of the DOM, so the caller can hand the children to another slot without
+ * the marker element travelling with them.
+ *
+ * @param {HTMLElement} container - Element searched for the selector.
+ * @param {string} selector - CSS selector identifying the slot markers.
+ *
+ * @returns The children of every matched element, in document order.
  */
 function extractAndRemoveNodesBySelector(container: HTMLElement, selector: string): Array<Node> {
-	let containerNodes = container.querySelectorAll(selector);
+	const containerNodes = container.querySelectorAll(selector);
 
 	const nodes = Array.from(containerNodes).reduce((acc, c) => {
 		return [...acc, ...Array.from(c.childNodes)];
 	}, [] as Array<Node>);
 
-	const nodesToRemove = container.querySelectorAll<HTMLElement>(selector);
-	Array.from(nodesToRemove).forEach((node) => node.remove());
+	Array.from(containerNodes).forEach((node) => node.remove());
 	return nodes;
 }

@@ -63,6 +63,10 @@ import { PortalDismissReasons } from './portal-dismiss-reasons';
 			</div>
 		</div>
 	`,
+	// Reason 1 of CODING_RULES: `scrollable` has to reach the `.portal-body` a single-content
+	// portal brings with it — a node the consumer wrote, moved in here from a component created
+	// with `createComponent`, so it carries their marker attribute and no encapsulated rule of
+	// ours would ever match it. Every selector emitted stays under this element.
 	encapsulation: ViewEncapsulation.None,
 	styleUrl: './portal.scss'
 })

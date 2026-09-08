@@ -55,6 +55,7 @@ This library is part of the **ng-hub-ui** ecosystem:
 - [🪄 API Reference](#-api-reference)
 - [🧩 Styling](#-styling)
 - [♿ Accessibility](#-accessibility)
+- [🖥️ Server-Side Rendering](#️-server-side-rendering)
 - [📊 Changelog](#-changelog)
 - [🤝 Contribution](#-contribution)
 - [☕ Support the Project](#-support-the-project)
@@ -568,7 +569,7 @@ passed in; `R` is the type of the value the portal closes with.
 
 ## 🧩 Styling
 
-`ng-hub-ui-portal` is a **headless / structural** library: it does not ship a themed design or expose CSS custom properties. The only built-in styles are minimal structural rules (e.g. a scrollable content host). You are in full control of the visual presentation through:
+`ng-hub-ui-portal` is a **headless / structural** library: it does not ship a themed design or expose CSS custom properties. The only built-in styles are the structural rules `scrollable` needs — they pin the content box and let the body scroll inside it. You are in full control of the visual presentation through:
 
 - The markup and styles of your **content components**.
 - The `windowClass`, `portalDialogClass`, and `portalContentClass` options, which let you attach your own CSS classes to the generated portal elements.
@@ -594,6 +595,16 @@ this.portal.open(MyContentComponent, {
 }
 ```
 
+While at least one portal is open the library marks the document body with `hub-portal-open`, so
+you can lock the page behind the window. The unprefixed `portal-open` is still written beside it
+and disappears in 23.0.0 — see [BREAKING_CHANGES.md](./BREAKING_CHANGES.md).
+
+```css
+body.hub-portal-open {
+	overflow: hidden;
+}
+```
+
 ## ♿ Accessibility
 
 The library implements accessibility features:
@@ -603,11 +614,18 @@ The library implements accessibility features:
 - Focus management
 - Screen reader compatibility
 
+## 🖥️ Server-Side Rendering
+
+**Not verified.** A portal window only exists after a gesture, so the prerender that stands as
+running proof for the libraries which render markup on the page never draws one, and there is
+nothing here to promise on. `HubPortalStack` reaches for `document` the moment `open()` is
+called: if you call it during server rendering, guard the call yourself.
+
 ## 📊 Changelog
 
 All notable changes to this library are documented in [CHANGELOG.md](./CHANGELOG.md), following [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-The current version is **0.3.4**.
+The current version is **22.2.0**.
 
 ## 🤝 Contribution
 

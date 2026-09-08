@@ -3,6 +3,45 @@
 The major version tracks the Angular major this library targets, so it cannot carry a semver
 warning. A breaking change therefore ships as a minor, and this file is the only notice you get.
 
+## [22.2.0] - 2026-09-08
+
+### Announced: the `portal-open` body class is removed in 23.0.0
+
+- **Change**: while at least one portal is open the library marks `<body>`. The mark is now
+  `hub-portal-open`; the unprefixed `portal-open` is written beside it and disappears in 23.0.0.
+  Nothing is removed here — this release is the notice.
+- **Impact**: an unprefixed class is a name in the application's namespace, not in the library's,
+  so a host with its own `.portal-open` rule was silently joined by ours and had no way of
+  finding out. From 23.0.0 a stylesheet still matching `portal-open` stops reacting, and, as with
+  any CSS selector that no longer matches, nothing warns you: the page simply keeps scrolling
+  behind the dialog, or whatever else that rule was for.
+- **Migration**: rename the selector.
+
+  ```css
+  /* Before */
+  body.portal-open {
+  	overflow: hidden;
+  }
+
+  /* After */
+  body.hub-portal-open {
+  	overflow: hidden;
+  }
+  ```
+
+### `scrollable` now does something
+
+- **Change**: `scrollable: true` used to write `component-host-scrollable` on the content
+  component's host element, which never enters the document, so the option had no effect
+  whatsoever. It is now delivered by the dialog, through the `portal-dialog-scrollable` class the
+  window already set, and the library's stylesheet dresses that class.
+- **Impact**: a caller who passes `scrollable: true` today sees no change in layout, because
+  nothing happened before. From this release the content box is pinned and the body scrolls inside
+  it — which is what the option always said it did. If your own stylesheet already implemented
+  `portal-dialog-scrollable` by hand, check it against ours before upgrading: yours still wins on
+  equal specificity, being loaded later, but the two now overlap.
+- **Migration**: none, unless you were relying on `scrollable` being inert.
+
 ## [22.1.0] - 2026-09-06
 ### `componentInstance` is typed, so reaching straight through it no longer compiles
 

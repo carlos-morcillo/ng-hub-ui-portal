@@ -5,6 +5,59 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [22.2.0] - 2026-09-08
+
+### Fixed
+
+- **`HubPortal.open()` with a plain string opened an empty dialog.** Every other kind of content is
+  split into the three slots `_createWindowComponent` destructures — `[header, body, footer]`. The
+  string path was not: it returned a single slot, so the text landed in the **header** and the body
+  arrived `undefined`, which Angular projects as nothing. The window opened with an empty
+  `.portal-content` and the reader saw a blank box.
+
+    The string now goes into the body slot like everything else. Four specs pin it in
+    `portal-string-content.spec.ts`: the text is rendered, it lands in the body and not in the
+    header when the window draws its three slots, the call does not throw, and <kbd>Esc</kbd>
+    still closes it.
+
+    Worth stating plainly, because the same defect behaved worse in `ng-hub-ui-modal`, where it
+    also took the keyboard down with it: **here <kbd>Esc</kbd> never stopped working.** This
+    window arms its listeners in `ngOnInit`, not at the tail of the entry transition, so nothing
+    downstream of the slot split could disarm them. The blank dialog was the whole symptom.
+
+### Changed
+
+- **The `<body>` mark is `hub-portal-open`.** The old `portal-open` claimed a name in the
+  application's namespace rather than in the library's, the same defect `ng-hub-ui-utils` retired
+  from the bare `[tooltip]` attribute in 22.14.0: nothing warns a host whose own `.portal-open`
+  rule is silently joined by ours. Both classes are written for now, so a stylesheet matching the
+  old name keeps working; `portal-open` is removed in 23.0.0. See
+  [`BREAKING_CHANGES.md`](./BREAKING_CHANGES.md).
+
+- **`scrollable` is delivered by the dialog, not by a class on the content component's host.**
+  That host is only a query root: its children are handed to the window and the host itself never
+  enters the document, so `component-host-scrollable` — and the only rule this library shipped for
+  it — matched nothing, and asking for `scrollable` did nothing at all. The option reaches the
+  dialog through `portal-dialog-scrollable`, which `HubPortalWindow` already set, and the
+  stylesheet now dresses that: the content box is pinned and the body scrolls inside it, or, where
+  the content brings no `.portal-body` of its own, the content box is what scrolls. The old
+  `FIXME` that asked for this is replaced by a note saying why the host cannot be styled.
+
+- **The slot split is one documented function instead of three inline expressions.** Both declared
+  slots are taken out of the container before the body is captured, and the body is captured as a
+  static array. The old code read the body **between** the two extractions and got away with it
+  only because what it captured was the live `childNodes` list, which Angular snapshots later, once
+  both markers are already gone — correct by accident, disagreeing with the `Node[][]` `ContentRef`
+  declares, and going empty the moment the nodes are projected out. No behaviour changes;
+  `portal-slots.spec.ts` guards the contract from here on. This is the shape `ng-hub-ui-modal`
+  settled on in 22.10.0.
+
+### Added
+
+- **Both READMEs state where this library stands on server-side rendering.** The honest answer is
+  «not verified»: a portal window only exists after a gesture, so the site's prerender — which is
+  the running proof for the libraries that render markup on the page — never draws one.
+
 ## [22.1.0] - 2026-09-06
 
 ### Changed

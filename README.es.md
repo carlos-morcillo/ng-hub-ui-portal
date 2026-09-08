@@ -55,6 +55,7 @@ Esta librería forma parte del ecosistema **ng-hub-ui**:
 - [🪄 Referencia de la API](#-referencia-de-la-api)
 - [🧩 Estilos](#-estilos)
 - [♿ Accesibilidad](#-accesibilidad)
+- [🖥️ Renderizado en servidor](#️-renderizado-en-servidor)
 - [📊 Registro de cambios](#-registro-de-cambios)
 - [🤝 Contribución](#-contribución)
 - [☕ Apoyar el proyecto](#-apoyar-el-proyecto)
@@ -568,7 +569,7 @@ clase que se pasa; `R` es el tipo del valor con el que se cierra el portal.
 
 ## 🧩 Estilos
 
-`ng-hub-ui-portal` es una librería **headless / estructural**: no incluye un diseño con tema ni expone variables CSS personalizadas. Los únicos estilos integrados son reglas estructurales mínimas (por ejemplo, un host de contenido con desplazamiento). Tienes control total sobre la presentación visual mediante:
+`ng-hub-ui-portal` es una librería **headless / estructural**: no incluye un diseño con tema ni expone variables CSS personalizadas. Los únicos estilos integrados son las reglas estructurales que necesita `scrollable`: fijan la caja de contenido y dejan que el cuerpo se desplace dentro de ella. Tienes control total sobre la presentación visual mediante:
 
 - El marcado y los estilos de tus **componentes de contenido**.
 - Las opciones `windowClass`, `portalDialogClass` y `portalContentClass`, que te permiten asignar tus propias clases CSS a los elementos del portal generados.
@@ -594,6 +595,17 @@ this.portal.open(MyContentComponent, {
 }
 ```
 
+Mientras haya al menos un portal abierto, la librería marca el `body` del documento con
+`hub-portal-open`, para que puedas bloquear la página que queda detrás de la ventana. La clase sin
+prefijo `portal-open` se sigue escribiendo al lado y desaparece en la 23.0.0: mira
+[BREAKING_CHANGES.md](./BREAKING_CHANGES.md).
+
+```css
+body.hub-portal-open {
+	overflow: hidden;
+}
+```
+
 ## ♿ Accesibilidad
 
 La librería implementa características de accesibilidad:
@@ -603,11 +615,18 @@ La librería implementa características de accesibilidad:
 - Gestión del foco
 - Compatibilidad con lectores de pantalla
 
+## 🖥️ Renderizado en servidor
+
+**No comprobado.** Una ventana de portal solo existe tras un gesto, así que el prerender que sirve
+de prueba corriendo para las librerías que sí pintan marcado en la página nunca dibuja ninguna, y
+aquí no hay nada que prometer. `HubPortalStack` toca `document` en cuanto se llama a `open()`: si
+lo llamas durante el renderizado en servidor, pon tú la guarda.
+
 ## 📊 Registro de cambios
 
 Todos los cambios relevantes de esta librería se documentan en [CHANGELOG.md](./CHANGELOG.md), siguiendo [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) y [Versionado Semántico](https://semver.org/spec/v2.0.0.html).
 
-La versión actual es la **0.3.4**.
+La versión actual es la **22.2.0**.
 
 ## 🤝 Contribución
 
